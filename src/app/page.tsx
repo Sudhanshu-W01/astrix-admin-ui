@@ -1,7 +1,6 @@
 "use client";
 import {
   AllUsers,
-  getUserTickets,
   getTicketsBuyers,
   getUserEvents,
   getEventTickets,
@@ -29,13 +28,13 @@ const Home = () => {
     user,
     events: evntParms,
     buyers,
-    tickets: ticketParams,
+    tickets: ticketParams
   } = useSelector((state: any) => state.tableParams);
   const [page, setPage] = useState({
     event: 1,
     ticket: 1,
     buyers: 1,
-    user: 1,
+    user: 1
   });
   const [selectedRow, setSelectedRow] = useState<ISelected>({});
   const [events, setEvents] = useState([]);
@@ -63,7 +62,7 @@ const Home = () => {
   const fetchData = async (
     fetchFunction: () => Promise<any>,
     setStateFunction: React.Dispatch<React.SetStateAction<any>>,
-    setDataFlag = false,
+    setDataFlag = false
   ) => {
     setLoading(true);
     try {
@@ -84,7 +83,7 @@ const Home = () => {
   const handleUserClick = async (
     index: any,
     data: any,
-    label: String,
+    label: string,
     page: number,
   ) => {
     setSelectedRow({ [label.toLowerCase()]: index });
@@ -149,7 +148,7 @@ const Home = () => {
       case "ticket":
         setTicketBuyers([]);
         await fetchData(
-          () => getUserTickets(userData.eventId, userData?.username, newPage),
+          () => getEventTickets(userData?.eventId, userData?.username, newPage),
           setTickets,
           true,
         );

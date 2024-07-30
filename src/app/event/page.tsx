@@ -18,7 +18,7 @@ interface ISelected {
 const Event = () => {
   const [loading, setLoading] = useState(false);
   const [events, setEvents] = useState([]);
-  const [userData, setUserData] = useState({});
+  const [userData, setUserData] = useState<any>({});
   const [tickets, setTickets] = useState([]);
   const [buyers, setBuyers] = useState([]);
   const [noData, setNoData] = useState(false);

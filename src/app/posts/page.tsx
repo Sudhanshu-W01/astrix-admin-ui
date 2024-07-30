@@ -13,8 +13,8 @@ interface ISelected {
 const Post = () => {
   const [loading, setLoading] = useState(false);
   const [noData, setNoData] = useState(false);
-  const [posts, setPosts] = useState(false);
-  const [helperData, setHelperData] = useState();
+  const [posts, setPosts] = useState<any>(false);
+  const [helperData, setHelperData] = useState<any>();
   const [postComments, setPostComments] = useState([]);
   const [selectedRow, setSelectedRow] = useState<ISelected>({});
   const [page, setPage] = useState({

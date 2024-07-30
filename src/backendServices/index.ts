@@ -92,3 +92,11 @@ export const getUserCommentOnPost = async (
   );
   return data?.UserDetails;
 };
+
+export const getUserTickets = async (eventId:any, username:any, newPage:any)=>{
+  try {
+    
+  } catch (error:any) {
+    throw new Error(error);
+  }
+}

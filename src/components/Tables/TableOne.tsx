@@ -1,3 +1,4 @@
+"use client"
 import {
   updateBuyers,
   updateEvents,
