@@ -1,5 +1,5 @@
 import axios from "axios";
-const DASHBOARD_API = "https://astrix-dashboard.azurewebsites.net";
+const DASHBOARD_API = "https://dash-astrix.azurewebsites.net";
 
 export const AllUsers = async (page: number = 1, items: number = 10) => {
   const { data } = await axios.get(
