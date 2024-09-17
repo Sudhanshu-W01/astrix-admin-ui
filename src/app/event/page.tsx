@@ -134,7 +134,16 @@ const Event = () => {
             {tickets.length ? (
               <TableOne
                 label={"Tickets"}
-                data={tickets}
+                data={tickets?.map((el: any) => {
+                  return {
+                    name: el?.name,
+                    issueQty: el?.issueQty,
+                    soldQty: el?.issueQty - el?.availableQty,
+                    availableQty: el?.availableQty,
+                    maxQty: el?.maxQty,
+                    ...el
+                  }
+                })}
                 type="ticket"
                 handleClick={handleTicketClick}
                 selectedRow={selectedRow}
