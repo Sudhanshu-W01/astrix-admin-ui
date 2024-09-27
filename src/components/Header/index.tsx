@@ -234,8 +234,8 @@ const Header = (props: {
               onChange={handleTagChange}
             >
               <option value="">Select a tag</option>
-              {keyTags[pathname]?.map((tag: any) => {
-                return <option value={tag}>{tag}</option>;
+              {keyTags[pathname]?.map((tag: any, ind: any) => {
+                return <option key={ind} value={tag}>{tag}</option>;
               })}
             </select>
 
