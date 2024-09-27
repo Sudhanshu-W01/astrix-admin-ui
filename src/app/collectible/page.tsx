@@ -6,6 +6,7 @@ import {
 } from "@/backendServices";
 import Loader from "@/components/common/Loader";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
+import TableCollectibles from "@/components/Tables/TableCollectibles";
 import TableOne from "@/components/Tables/TableOne";
 import { renderNoDataMessage } from "@/utils/helpers";
 import React, { useEffect, useState } from "react";
@@ -21,6 +22,7 @@ const Collectibles = () => {
   const [noData, setNoData] = useState(false);
   const [collectibleBuyers, setCollectibleBuyers] = useState([]);
   const [selectedRow, setSelectedRow] = useState<ISelected>({});
+  const [hasNext, setHasNext] = useState<boolean>(true)
   const [page, setPage] = useState({
     collectibles: 1,
     buyers: 1,
@@ -31,15 +33,22 @@ const Collectibles = () => {
     buyers: buyersParams,
     tickets: ticketParams,
   } = useSelector((state: any) => state.tableParams);
+
+
   const fetchData = async (
     fetchFunction: () => Promise<any>,
     setStateFunction: React.Dispatch<React.SetStateAction<any>>,
     setDataFlag = false,
+    type?: any
   ) => {
     setLoading(true);
     try {
       const data = await fetchFunction();
-      setStateFunction(data);
+      if(type === "collectible"){
+        setStateFunction([...collectibles,...data]);
+      } else {
+        setStateFunction(data);
+      }
       if (setDataFlag) setNoData(!data.length);
     } catch {
       if (setDataFlag) setNoData(true);
@@ -73,7 +82,7 @@ const Collectibles = () => {
     switch (type) {
       case "collectible":
         setCollectibleBuyers([]);
-        await fetchData(() => AllCollectibles(newPage), setCollectibles, true);
+        await fetchData(() => AllCollectibles(newPage), setCollectibles, true, type);
         break;
       case "buyer":
         await fetchData(
@@ -90,11 +99,12 @@ const Collectibles = () => {
         <Loader />
       ) : (
         <div className="grid">
-          <div className="w-full overflow-scroll">
-            <TableOne
+          <div className="w-full overflow-scroll my_custom_scrollbar">
+            <TableCollectibles
               label={"Collectibles"}
               data={collectibles}
               type="collectible"
+              hasMore={hasNext}
               page={page?.collectibles}
               fetchPaginated={fetchPaginated}
               selectedRow={selectedRow}

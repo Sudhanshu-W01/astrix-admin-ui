@@ -1,6 +1,13 @@
 import axios from "axios";
 const DASHBOARD_API = "https://dash-astrix.azurewebsites.net";
 
+export const dashboardData = async () => {
+  const { data } = await axios.get(
+    `${DASHBOARD_API}/combineddata`,
+  );
+  return data;
+};
+
 export const AllUsers = async (page: number = 1, items: number = 10) => {
   const { data } = await axios.get(
     `${DASHBOARD_API}/users?page=${page}&items=${items}`,
