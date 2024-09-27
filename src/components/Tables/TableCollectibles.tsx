@@ -1,4 +1,5 @@
 "use client"
+import { clearTags } from "@/app/reducers/filterReducers";
 import {
   updateBuyers,
   updateEvents,
@@ -6,22 +7,28 @@ import {
   updateTickets,
   updateUser,
 } from "@/app/reducers/tableReducers";
+import { RootState } from "@/app/store";
 import { BRAND } from "@/types/brand";
 import axios from "axios";
 import moment from "moment";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import InfiniteScrollLoader from "../common/infiniteScrollLoader";
 
-function downloadTable(label: string, data: any) {
+async function downloadTable(label: string) {
+
+  const { data } = await axios.get(
+    `https://dash-astrix.azurewebsites.net/collectible`,
+  );
+
   // Convert JSON to CSV
   const csvRows = [];
-  const headers = Object.keys(data[0]);
+  const headers = Object.keys(data?.collectibles[0]);
   csvRows.push(headers.join(",")); // Add headers
 
-  for (const row of data) {
+  for (const row of data?.collectibles) {
     const values = headers.map((header) => {
       const val = row[header];
       if (Array.isArray(val)) {
@@ -84,11 +91,12 @@ const RoleDropdown = ({
     </div>
   );
 };
-const TableOne = ({
+const TableCollectibles = ({
   label,
   data,
   type,
   handleClick,
+  hasMore,
   selectedRow,
   fetchPaginated,
   page,
@@ -96,6 +104,7 @@ const TableOne = ({
   label: string;
   data: any;
   type: string;
+  hasMore: boolean;
   selectedRow?: any;
   handleClick?: any;
   fetchPaginated?: any;
@@ -104,12 +113,8 @@ const TableOne = ({
   const dispatch = useDispatch();
   const [users, setusers] = useState(data);
   const [filteredData, setFilteredData] = useState(data)
-  const [editPrice, setPriceEdit] = useState(true);
-  const [editPriceIndex, setEditPriceIndex] = useState<any>("");
-  const [stateEdit, setStateEdit] = useState(true);
-  const [editStateIndex, setEditStateIndex] = useState<any>("");
-  const [hasMore, setHasMore] = useState(true)
   const [currentPage, setCurrentPage] = useState(page || 1)
+  const { filterText, tags } = useSelector((state: RootState) => state.filter);
   const handleRoleChange = (username: string, newRole: string) => {
     setusers((prevUsers: any) =>
       prevUsers.map((user: any) =>
@@ -146,12 +151,57 @@ const TableOne = ({
     setFilteredData(sorted);
   }
 
+  useEffect(() => {
+    dispatch(clearTags())
+  }, [])
+  
+  useEffect(() => {
+    let updatedData = data;
+
+    // Filter by tags
+    if (filterText) {
+      if (tags.length > 0) {
+        updatedData = data.filter((row: any) =>
+          tags.some((key: string) => {
+            const value = row[key];
+            return (
+              value && String(value).toLowerCase().includes(filterText.toLowerCase())
+            );
+          })
+        );
+      } else {
+        updatedData = data.filter((row: any) =>
+          Object.keys(row).some((keys: any) =>{
+            const value = row[keys];
+            return (
+              value && keys!== "avatar" && keys!== "coverImg" && String(value).toLowerCase().includes(filterText.toLowerCase())
+            )
+          }
+          )
+        );
+      }
+    }
+
+    setFilteredData(updatedData);
+  }, [filterText, tags, data]);
+
+
+  const highlightText = (text: string, search: string) => {
+    if (!search) return text;
+    const parts = text.split(new RegExp(`(${search})`, 'gi'));
+    return parts.map((part, index) =>
+      part.toLowerCase() === search.toLowerCase() ? (
+        <span key={index} className="bg-yellow-200">{part}</span>
+      ) : (
+        part
+      )
+    );
+  };
+
   const fetchMoreData = () => {
     fetchPaginated(currentPage + 1, type)
       .then((newData: any) => {
-        console.log(newData, "new.........")
         if (newData.length === 0) {
-          setHasMore(false); // No more data to load
         } else {
           setFilteredData((prevData: any) => [...prevData, ...newData]);
           setCurrentPage(currentPage + 1); // Update current page
@@ -159,18 +209,18 @@ const TableOne = ({
       })
       .catch((error: any) => {
         console.error("Error fetching more data: ", error);
-        setHasMore(false); // Stop loading if there's an error
       });
   };  
+
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 ">
       <h4 className="mb-6 flex items-center justify-between text-xl font-semibold text-black dark:text-white">
         {label ?? "Table One"}
-        {data.length ? (
+        {filteredData?.length ? (
           <span
             className="cursor-pointer rounded-full border bg-boxdark px-2 py-1 text-sm text-white"
             onClick={() => {
-              downloadTable(label, data);
+              downloadTable(label);
             }}
           >
             Download
@@ -181,15 +231,15 @@ const TableOne = ({
       </h4>
 
       <div className="w-full ">
-        <div id="table-scrollable" className="flex w-full flex-col overflow-scroll">
-        {/* <InfiniteScroll
+        <div id="table-scrollable" className="flex w-full max-h-[80vh] flex-col my_custom_scrollbar overflow-scroll">
+        <InfiniteScroll
           dataLength={filteredData.length} 
-          next={fetchMoreData} 
-          hasMore={hasMore} 
+          next={fetchMoreData}
+          hasMore={hasMore}
           loader={<InfiniteScrollLoader />}
-          endMessage={<p>No more data to load.</p>} 
+          endMessage={<p className="h-[20vh] flex w-full items-center justify-center">No more data to load.</p>} 
           scrollableTarget="table-scrollable"
-        > */}
+        >
           <table className="divide-gray-200 min-w-full divide-y ">
             <thead className="bg-gray-50 ">
               <tr>
@@ -217,16 +267,6 @@ const TableOne = ({
                   }
                     </th>
                   ))}
-                {type !== "user" &&
-                  label != "Events" &&
-                  label != "Collectibles" &&
-                  label != "Comments" &&
-                  label != "Buyers" &&
-                  label != "Tickets" && (
-                    <th className="text-gray-500 whitespace-nowrap px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">
-                      {"Change Role"}
-                    </th>
-                  )}
               </tr>
             </thead>
             <tbody className="divide-gray-200 divide-y bg-white">
@@ -237,7 +277,7 @@ const TableOne = ({
                   <tr
                     key={key}
                     className={`cursor-pointer ${isSelected ? "bg-blue-200" : ""} ${
-                      key === data.length
+                      key === filteredData?.length
                         ? ""
                         : "border-b border-stroke dark:border-strokedark"
                     }`}
@@ -253,133 +293,53 @@ const TableOne = ({
                         handleClick(key, item, label);
                         if (type === "user") {
                           dispatch(
-                            updateUser({ index: key, data: item, label }),
+                            updateUser({ index: key, filteredData: item, label }),
                           );
                         } else if (type == "event") {
                           dispatch(
-                            updateEvents({ index: key, data: item, label }),
+                            updateEvents({ index: key, filteredData: item, label }),
                           );
                         } else if (type === "ticket") {
                           dispatch(
-                            updateTickets({ index: key, data: item, label }),
+                            updateTickets({ index: key, filteredData: item, label }),
                           );
                         } else if (type === "collectible") {
                           dispatch(
-                            updateBuyers({ index: key, data: item, label }),
+                            updateBuyers({ index: key, filteredData: item, label }),
                           );
                         } else if (type === "buyer") {
                           dispatch(
-                            updateBuyers({ index: key, data: item, label }),
+                            updateBuyers({ index: key, filteredData: item, label }),
                           );
                         } else if (type === "post") {
                           dispatch(
-                            updatePosts({ index: key, data: item, label }),
+                            updatePosts({ index: key, filteredData: item, label }),
                           );
                         }
                       }
                     }}
                   >
                     {Object.keys(item)?.map((values: any, ind: number) =>
-                     
+                    values === "createdAt" ? 
+                    <td
+                    key={ind}
+                    className="text-gray-900 whitespace-nowrap px-6 py-4 text-sm font-medium"
+                  >
+                    {moment(item[values]).format('lll')}
+                  </td>
+                    :
                         <td
                           key={ind}
-                          className={`text-gray-900 relative px-6 whitespace-nowrap aspect-square ${values === "avatar" ? "py-0 rounded-full" : "py-4"} text-sm font-medium`}
+                          className="text-gray-900 whitespace-nowrap px-6 py-4 text-sm font-medium"
                         >
-                          { 
-                          values === "image" ? 
-                          (
-                            item[values] !== null && (
-                              <Image
-                                className="py-[1px] object-cover"
-                                src={item[values]}
-                                alt="image"
-                                fill
-                              />
-                            )
-                          )
-                          : values === "avatar" ?
-                          (
-                            item[values] !== null && (
-                              <Image
-                                className="object-cover relative rounded-full aspect-square left-[50%] translate-x-[-50%]"
-                                src={item[values]}
-                                alt="avatar"
-                                height={50}
-                                width={50}
-                              />
-                            )
-                          ) :
-                          // values === "price" ?
-                          // (
-                          //   <span onClick={(e) => e.stopPropagation()}>
-                          //   {
-                          //     <span className="flex justify-between gap-1">
-                          //       {editPriceIndex === key ? (
-                          //         <input
-                          //           className={`mx-2 rounded p-1 border-[1px]`}
-                          //           type="text"
-                          //           value={item[values]}
-                          //         />
-                          //       ) : (
-                          //         <p>
-                          //           {item[values]
-                          //           }
-                          //         </p>
-                          //       )}
-                          //       <Image
-                          //       onClick={() => {
-                          //         setPriceEdit(!editPrice)
-                          //         setEditPriceIndex(key)
-                          //       }}
-                          //       className="cursor-pointer"
-                          //       src="/images/icon/pencil-edit.svg"
-                          //       alt="avatar"
-                          //       height={16}
-                          //       width={16}
-                          //     />
-                          //     </span>
-                          //   }
-                          // </span>
-                          // )
-                          // :
-                          // values === "state" ?
-                          // (
-                          //   <span onClick={(e) => e.stopPropagation()}>
-                          //   {
-                          //     <span className="flex justify-between gap-1">
-                          //       {editStateIndex === key ? (
-                          //         <input
-                          //           className={`mx-2 p-1 rounded border-[1px]`}
-                          //           type="text"
-                          //           value={item[values]}
-                          //         />
-                          //       ) : (
-                          //         <p>
-                          //           {item[values]
-                          //           }
-                          //         </p>
-                          //       )}
-                          //       <Image
-                          //       onClick={() => {
-                          //         setStateEdit(!stateEdit)
-                          //         setEditStateIndex(key)
-                          //       }}
-                          //       className="cursor-pointer"
-                          //       src="/images/icon/pencil-edit.svg"
-                          //       alt="avatar"
-                          //       height={16}
-                          //       width={16}
-                          //     />
-                          //     </span>
-                          //   }
-                          // </span>
-                          // )
-                          // :
-                            values === "createdAt" ? (
-                              moment(item[values]).format("lll")
-                            ) 
-                          :
-                          item[values]}
+                          {item[values] === null ? (
+                              <span className="text-gray-500"></span>
+                            ) : tags.includes(values) ? 
+                             highlightText(String(item[values]), filterText)
+                             : tags.length < 1 ? 
+                             highlightText(String(item[values]), filterText) 
+                             :
+                             item[values]}
                         </td>
                       
                     )}
@@ -401,11 +361,11 @@ const TableOne = ({
               })}
             </tbody>
           </table>
-          {/* </InfiniteScroll> */}
+          </InfiniteScroll>
         </div>
       </div>
       {/* pagination */}
-      <div className=" flex items-center justify-end">
+      {/* <div className=" flex items-center justify-end">
         <div className="mt-3 flex items-center gap-3 p-2">
           <button
             className="rounded-full border px-3 py-1 shadow-lg"
@@ -424,9 +384,9 @@ const TableOne = ({
             Next
           </button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
 
-export default TableOne;
+export default TableCollectibles;

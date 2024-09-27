@@ -3,6 +3,7 @@ import { AllPosts, getUserCommentOnPost } from "@/backendServices";
 import Loader from "@/components/common/Loader";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import TableOne from "@/components/Tables/TableOne";
+import TablePosts from "@/components/Tables/TablePosts";
 import { renderNoDataMessage } from "@/utils/helpers";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -17,6 +18,7 @@ const Post = () => {
   const [helperData, setHelperData] = useState<any>();
   const [postComments, setPostComments] = useState([]);
   const [selectedRow, setSelectedRow] = useState<ISelected>({});
+  const [hasNext, setHasNext] = useState<boolean>(true)
   const [page, setPage] = useState({
     post: 1,
     commentUser: 1,
@@ -26,11 +28,20 @@ const Post = () => {
     fetchFunction: () => Promise<any>,
     setStateFunction: React.Dispatch<React.SetStateAction<any>>,
     setDataFlag = false,
+    type?:any
   ) => {
     setLoading(true);
     try {
       const data = await fetchFunction();
-      setStateFunction(data);
+      if(type === "post"){
+        if(data?.length < 5) {
+          setHasNext(false)
+        }
+        setStateFunction([...posts,...data]);
+      }else {
+        setStateFunction(data);
+      }
+      
       if (setDataFlag) setNoData(!data.length);
     } catch {
       if (setDataFlag) setNoData(true);
@@ -65,7 +76,7 @@ const Post = () => {
           let newState = { ...prev, commentUser: 1 };
           return newState;
         });
-        await fetchData(() => AllPosts(newPage), setPosts, true);
+        await fetchData(() => AllPosts(newPage), setPosts, true, type);
         break;
       case "commentUser":
         await fetchData(
@@ -87,12 +98,13 @@ const Post = () => {
         <Loader />
       ) : (
         <div className="grid">
-          <div className="w-full overflow-scroll">
+          <div className="w-full overflow-scroll my_custom_scrollbar">
             {posts && posts?.length ? (
-              <TableOne
+              <TablePosts
                 label={"Posts"}
                 data={posts}
                 type="post"
+                hasMore={hasNext}
                 selectedRow={selectedRow}
                 handleClick={(index: any, data: any, label: string) =>
                   handlePostClick(index, data, label)

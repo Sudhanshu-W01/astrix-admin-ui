@@ -1,10 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import tableReducers from "./reducers/tableReducers";
+import filterReducers from "./reducers/filterReducers";
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       tableParams:tableReducers,
+      filter: filterReducers,
     },
   });
 };

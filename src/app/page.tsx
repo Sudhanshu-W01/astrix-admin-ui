@@ -8,6 +8,7 @@ import {
 import Loader from "@/components/common/Loader";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import TableOne from "@/components/Tables/TableOne";
+import TableUser from "@/components/Tables/TableUser";
 import { renderNoDataMessage } from "@/utils/helpers";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -41,6 +42,7 @@ const Home = () => {
   const [tickets, setTickets] = useState([]);
   const [ticketBuyers, setTicketBuyers] = useState([]);
   const [noData, setNoData] = useState(false);
+  const [hasMore, setHasMore] = useState<boolean>(true)
   const [userData, setUserData] = useState<IUser>({
     username: "",
     eventId: "",
@@ -62,12 +64,20 @@ const Home = () => {
   const fetchData = async (
     fetchFunction: () => Promise<any>,
     setStateFunction: React.Dispatch<React.SetStateAction<any>>,
-    setDataFlag = false
+    setDataFlag = false,
+    type?: any
   ) => {
     setLoading(true);
     try {
       const data = await fetchFunction();
-      setStateFunction(data);
+      if(type === "user") {
+        if(data?.length < 10){
+          setHasMore(false)
+        }
+        setStateFunction([...users, ...data]);
+      }else {
+        setStateFunction(data);
+      }
       if (setDataFlag) setNoData(!data.length);
     } catch {
       if (setDataFlag) setNoData(true);
@@ -131,7 +141,7 @@ const Home = () => {
     });
     switch (type) {
       case "user":
-        await fetchData(() => AllUsers(newPage, 10), setUsers, true);
+        await fetchData(() => AllUsers(newPage, 10), setUsers, true, type);
         setTicketBuyers([]);
         setEvents([]);
         setTicketBuyers([]);
@@ -143,6 +153,7 @@ const Home = () => {
           () => getUserEvents(userData.username, newPage),
           setEvents,
           true,
+          type
         );
         break;
       case "ticket":
@@ -151,6 +162,7 @@ const Home = () => {
           () => getEventTickets(userData?.eventId, userData?.username, newPage),
           setTickets,
           true,
+          type
         );
         break;
       case "buyer":
@@ -163,6 +175,7 @@ const Home = () => {
             ),
           setTicketBuyers,
           true,
+          type
         );
         break;
     }
@@ -174,11 +187,12 @@ const Home = () => {
         <Loader />
       ) : (
         <div className="grid">
-          <div className="w-full overflow-scroll">
-            <TableOne
+          <div className="w-full overflow-scroll my_custom_scrollbar ">
+            <TableUser
               label={"Users"}
               data={users}
               type="user"
+              hasMore={hasMore}
               fetchPaginated={fetchPaginated}
               page={page?.user}
               selectedRow={selectedRow}
@@ -212,7 +226,7 @@ const Home = () => {
                 data={tickets}
                 type="ticket"
                 fetchPaginated={fetchPaginated}
-                page={page.ticket}
+                page={page?.ticket}
                 selectedRow={selectedRow}
                 handleClick={handleTicketClick}
               />

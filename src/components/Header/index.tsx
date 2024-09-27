@@ -4,15 +4,117 @@ import DropdownMessage from "./DropdownMessage";
 import DropdownNotification from "./DropdownNotification";
 import DropdownUser from "./DropdownUser";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { addTag, removeTag, setFilterText } from "@/app/reducers/filterReducers";
+import { useDispatch } from "react-redux";
+import { usePathname } from "next/navigation";
 
 const Header = (props: {
   sidebarOpen: string | boolean | undefined;
   setSidebarOpen: (arg0: boolean) => void;
 }) => {
+  const [inputValue, setInputValue] = useState<string>("");
+  const [selectedTag, setSelectedTag] = useState<string>("");
+  const [tags, setTags] = useState<string[]>([]);
+  const pathname = usePathname();
+
+  const keyTags: any = {
+    "/": [
+      "username",
+      "name",
+      "location",
+      "gender",
+      "role",
+      "dob",
+      "email",
+      "preferences",
+      "socials",
+      "phone",
+      "description",
+      "createdAt",
+      "address",
+      "isOnboarded",
+      "verified",
+      "followerCount",
+      "followingCount",
+    ],
+    "/event": [
+      "eventId",
+      "name",
+      "startDate",
+      "endDate",
+      "venue",
+      "location",
+      "description",
+      "tags",
+      "createdAt",
+      "commentCount",
+      "likeCount",
+      "userEngagementCount",
+      "status",
+      "state",
+      "owner",
+    ],
+    "/collectible": [
+      "name",
+      "description",
+      "issueQty",
+      "price",
+      "resaleRoyalty",
+      "redeemable",
+      "transferable",
+      "redeemStatus",
+      "createdAt",
+      "hash",
+      "cId",
+      "showcase",
+      "availableQty",
+      "resale",
+      "maxQty",
+      "freeCollectible",
+      "freeze",
+    ],
+    "/posts": [
+      "postId",
+      "content",
+      "commentCount",
+      "likeCount",
+      "isDeleted",
+      "createdAt",
+      "owner",
+    ],
+  };
+
+  const dispatch = useDispatch();
+  const handleAddTag = () => {
+    if (selectedTag !== "" && !tags.includes(selectedTag)) {
+      setTags((prevTags) => [...prevTags, selectedTag]);
+      const updatedTags = [...tags, selectedTag];
+      setTags(updatedTags);
+      // Dispatch the inputValue as filterText and updatedTags as tags
+      updatedTags.forEach((tag) => dispatch(addTag(tag)));
+    }
+  };
+
+  useEffect(() => {
+    dispatch(setFilterText(inputValue));
+  }, [inputValue]);
+
+  const handleTagChange = (e: any) => {
+    setSelectedTag(e.target.value);
+  };
+
+  const handleDeleteTag = (indexToRemove: number) => {
+    setTags((prevTags) =>
+      prevTags.filter((_, index) => index !== indexToRemove),
+    );
+    dispatch(removeTag(tags[indexToRemove]))
+
+  };
   return (
     <header className="sticky top-0 z-999 flex w-full bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
-      <div className="flex flex-grow items-center justify-between px-4 py-4 shadow-2 md:px-6 2xl:px-11">
-        <div className="flex items-center gap-2 sm:gap-4 lg:hidden">
+      <div className="flex flex-grow justify-between px-4 py-4 shadow-2 md:px-6 2xl:px-11">
+        <div className="flex gap-2 sm:gap-4 lg:hidden">
           {/* <!-- Hamburger Toggle BTN --> */}
           <button
             aria-controls="sidebar"
@@ -95,16 +197,54 @@ const Header = (props: {
 
               <input
                 type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Type to search..."
                 className="w-full bg-transparent pl-9 pr-4 font-medium focus:outline-none xl:w-125"
               />
             </div>
+
+            <div
+              className={`flex ${tags?.length > 0 && "mt-4"} flex-wrap space-x-1`}
+            >
+              {tags.map((tag, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-200 flex items-center space-x-2 rounded-md bg-slate-200 px-2 py-1"
+                >
+                  <span className="">{tag}</span>
+                  <button
+                    onClick={() => handleDeleteTag(index)}
+                    className="hover:text-red-700 text-rose-400"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
           </form>
         </div>
 
-        <div className="flex items-center gap-3 2xsm:gap-7">
-          <ul className="flex items-center gap-2 2xsm:gap-4">
+        <div className="flex  gap-3 2xsm:gap-7">
+          <ul className="flex gap-2 2xsm:gap-4">
             {/* <!-- Dark Mode Toggler --> */}
+            <select
+              className="border-gray-300 h-fit rounded-md border p-2"
+              value={selectedTag}
+              onChange={handleTagChange}
+            >
+              <option value="">Select a tag</option>
+              {keyTags[pathname]?.map((tag: any) => {
+                return <option value={tag}>{tag}</option>;
+              })}
+            </select>
+
+            <button
+              onClick={handleAddTag}
+              className=" h-fit rounded-md bg-blue-500 px-3 py-[7.6px] text-white"
+            >
+              Add Tag
+            </button>
             <DarkModeSwitcher />
             {/* <!-- Dark Mode Toggler --> */}
 
