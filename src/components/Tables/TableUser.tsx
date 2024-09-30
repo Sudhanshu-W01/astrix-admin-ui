@@ -116,8 +116,9 @@ const TableUser = ({
   const dispatch = useDispatch();
   const [filteredData, setFilteredData] = useState(data);
   const { filterText, tags } = useSelector((state: RootState) => state.filter);
-  // const [edit, setEdit] = useState(true);
-  // const [editIndex, setEditIndex] = useState<any>("");
+  const [edit, setEdit] = useState(true);
+  const [editIndex, setEditIndex] = useState<any>("");
+  const [editValue, setEditValue] = useState<any>("");
   const [currentPage, setCurrentPage] = useState(page || 1)
 
   useEffect(() => {
@@ -223,6 +224,12 @@ const TableUser = ({
     sorted.reverse();
     setFilteredData(sorted);
   };
+
+  const handleEditSave = () => {
+    setEditIndex("")
+
+  }
+
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 ">
       <h4 className="mb-6 flex items-center justify-between text-xl font-semibold text-black dark:text-white">
@@ -244,7 +251,7 @@ const TableUser = ({
         <div id="table-scrollable" className="flex max-h-[80vh] w-full flex-col my_custom_scrollbar overflow-scroll">
         <InfiniteScroll
           dataLength={filteredData.length} 
-          next={fetchMoreData} 
+          next={fetchMoreData}
           hasMore={hasMore} 
           loader={<InfiniteScrollLoader />}
           endMessage={<p className="h-[20vh] flex w-full items-center justify-center">No more data to load.</p>}
@@ -427,39 +434,42 @@ const TableUser = ({
                             )}
                           </>
                         ) 
-                        // : values === "role" ? (
-                        //   <span onClick={(e) => e.stopPropagation()}>
-                        //     {
-                        //       <span className="flex justify-between gap-1">
-                        //         {editIndex === key ? (
-                        //           <input
-                        //             className={`mx-2 rounded border-[1px]`}
-                        //             type="text"
-                        //             value={item[values]}
-                        //           />
-                        //         ) : (
-                        //           <p>
-                        //             {highlightText(
-                        //               String(item[values]),
-                        //               filterText,
-                        //             )}
-                        //           </p>
-                        //         )}
-                        //         <Image
-                        //         onClick={() => {
-                        //           setEdit(!edit)
-                        //           setEditIndex(key)
-                        //         }}
-                        //         className="cursor-pointer"
-                        //         src="/images/icon/pencil-edit.svg"
-                        //         alt="avatar"
-                        //         height={16}
-                        //         width={16}
-                        //       />
-                        //       </span>
-                        //     }
-                        //   </span>
-                        // )
+                        : values === "role" ? (
+                          <span onClick={(e) => e.stopPropagation()}>
+                            {
+                              <span className="flex justify-between gap-1">
+                                {editIndex === key ? (
+                                  <input
+                                    className={`mx-2 rounded border-[1px]`}
+                                    type="text"
+                                    placeholder={item[values]}
+                                    onChange={(e) => setEditValue(e.target.value)}
+                                    value={editValue}
+                                  />
+                                ) : (
+                                  <p>
+                                    {highlightText(
+                                      String(item[values]),
+                                      filterText,
+                                    )}
+                                  </p>
+                                )}
+                                
+                                {editIndex === key ? <button onClick={handleEditSave}>save</button> : 
+                                <Image
+                                onClick={() => {
+                                  setEditIndex(key)
+                                }}
+                                className="cursor-pointer"
+                                src="/images/icon/pencil-edit.svg"
+                                alt="avatar"
+                                height={16}
+                                width={16}
+                              /> }
+                              </span>
+                            }
+                          </span>
+                        )
                          : values === "createdAt" ? (
                           moment(item[values]).format("lll")
                         ) : item[values] === null ? (
