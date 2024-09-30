@@ -100,7 +100,7 @@ const TableOne = ({
   label: string;
   data: any;
   type: string;
-  hasMore: boolean;
+  hasMore?: any;
   selectedRow?: any;
   handleClick?: any;
   fetchPaginated?: any;
