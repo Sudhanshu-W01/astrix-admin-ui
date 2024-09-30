@@ -24,6 +24,7 @@ const Event = () => {
   const [tickets, setTickets] = useState([]);
   const [buyers, setBuyers] = useState([]);
   const [noData, setNoData] = useState(false);
+  const [hasEventNext, setHasEventNext] = useState<boolean>(true)
   const [hasNext, setHasNext] = useState<boolean>(true)
   const [page, setPage] = useState({
     event: 1,
@@ -49,10 +50,13 @@ const Event = () => {
       const data = await fetchFunction();
       if(type === "event"){
         if(data?.length < 10){
-          setHasNext(false)
+          setHasEventNext(false)
         }
         setStateFunction([...events,...data]);
       }else {
+        if(data?.length<10){
+          setHasNext(false)
+        }
         setStateFunction(data);
       }
       if (setDataFlag) setNoData(!data.length);
@@ -137,12 +141,12 @@ const Event = () => {
         <Loader />
       ) : (
         <div className="grid">
-          <div className="w-full overflow-scroll my_custom_scrollbar">
+          <div className="w-full flex flex-col gap-8 overflow-scroll my_custom_scrollbar">
             <TableEvents
               label={"Events"}
               data={events}
               type="event"
-              hasMore={hasNext}
+              hasMore={hasEventNext}
               selectedRow={selectedRow}
               handleClick={handleEventClick}
               fetchPaginated={fetchPaginated}
@@ -165,6 +169,7 @@ const Event = () => {
                 type="ticket"
                 handleClick={handleTicketClick}
                 selectedRow={selectedRow}
+                hasMore={hasNext}
                 fetchPaginated={fetchPaginated}
                 page={page?.ticket}
               />
@@ -176,6 +181,7 @@ const Event = () => {
               <TableOne
                 label={"Buyers"}
                 data={buyers}
+                hasMore={hasNext}
                 type="buyer"
                 handleClick={(key: string, data: any, label: string) => {
                   setSelectedRow({

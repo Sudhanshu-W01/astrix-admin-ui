@@ -84,11 +84,15 @@ const RoleDropdown = ({
     </div>
   );
 };
+
+
+
 const TableOne = ({
   label,
   data,
   type,
   handleClick,
+  hasMore,
   selectedRow,
   fetchPaginated,
   page,
@@ -96,6 +100,7 @@ const TableOne = ({
   label: string;
   data: any;
   type: string;
+  hasMore: boolean;
   selectedRow?: any;
   handleClick?: any;
   fetchPaginated?: any;
@@ -108,7 +113,6 @@ const TableOne = ({
   const [editPriceIndex, setEditPriceIndex] = useState<any>("");
   const [stateEdit, setStateEdit] = useState(true);
   const [editStateIndex, setEditStateIndex] = useState<any>("");
-  const [hasMore, setHasMore] = useState(true)
   const [currentPage, setCurrentPage] = useState(page || 1)
   const handleRoleChange = (username: string, newRole: string) => {
     setusers((prevUsers: any) =>
@@ -151,7 +155,6 @@ const TableOne = ({
       .then((newData: any) => {
         console.log(newData, "new.........")
         if (newData.length === 0) {
-          setHasMore(false); // No more data to load
         } else {
           setFilteredData((prevData: any) => [...prevData, ...newData]);
           setCurrentPage(currentPage + 1); // Update current page
@@ -159,7 +162,6 @@ const TableOne = ({
       })
       .catch((error: any) => {
         console.error("Error fetching more data: ", error);
-        setHasMore(false); // Stop loading if there's an error
       });
   };  
   return (
@@ -181,15 +183,15 @@ const TableOne = ({
       </h4>
 
       <div className="w-full ">
-        <div id="table-scrollable" className="flex w-full flex-col overflow-scroll">
-        {/* <InfiniteScroll
+        <div id="table-scrollable" className="flex w-full max-h-[50vh] flex-col my_custom_scrollbar overflow-scroll">
+        <InfiniteScroll
           dataLength={filteredData.length} 
           next={fetchMoreData} 
           hasMore={hasMore} 
           loader={<InfiniteScrollLoader />}
-          endMessage={<p>No more data to load.</p>} 
+          endMessage={<p className="h-[20vh] flex w-full items-center justify-center">No more data to load.</p>} 
           scrollableTarget="table-scrollable"
-        > */}
+        >
           <table className="divide-gray-200 min-w-full divide-y ">
             <thead className="bg-gray-50 ">
               <tr>
@@ -401,11 +403,11 @@ const TableOne = ({
               })}
             </tbody>
           </table>
-          {/* </InfiniteScroll> */}
+          </InfiniteScroll>
         </div>
       </div>
       {/* pagination */}
-      <div className=" flex items-center justify-end">
+      {/* <div className=" flex items-center justify-end">
         <div className="mt-3 flex items-center gap-3 p-2">
           <button
             className="rounded-full border px-3 py-1 shadow-lg"
@@ -424,7 +426,7 @@ const TableOne = ({
             Next
           </button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

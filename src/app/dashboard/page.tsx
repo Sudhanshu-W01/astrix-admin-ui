@@ -38,7 +38,7 @@ const Dashboard = () => {
     <div className="p-4">
       {/* Header Section */}
       <div className="bg-gray-200 w-full text-center p-4">
-        <h1 className="text-2xl font-bold">Algorant Overview</h1>
+        <h1 className="text-2xl font-bold">Admin Overview</h1>
       </div>
       <div className="w-full h-[45vh] mb-6">
         <AlgorantsChart dataAlgorant={data?.algorant}/>

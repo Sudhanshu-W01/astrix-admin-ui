@@ -8,7 +8,7 @@ const AlgorantsChart = ({dataAlgorant}: any) => {
     labels: ['Wallet Creation', 'Assets Counts', 'Transaction Count'],
     datasets: [
       {
-        label: 'Algorants Data',
+        label: 'Algorand Data',
         data: [dataAlgorant?.wallets ?? 0, dataAlgorant?.assets ?? 0, dataAlgorant?.transaction ?? 0],
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
       },
@@ -41,7 +41,7 @@ const AlgorantsChart = ({dataAlgorant}: any) => {
 
   return (
     <div className="bg-white h-full w-full pb-10 shadow-md p-4 rounded-lg">
-      <h2 className="text-lg font-bold mb-2">Total no of Algorants - {(+dataAlgorant?.wallets ?? 0) + (+dataAlgorant?.assets ?? 0) + (+dataAlgorant?.transaction ?? 0)}</h2>
+      <h2 className="text-lg font-bold mb-2">Algorand Transactions Overview- {(+dataAlgorant?.wallets ?? 0) + (+dataAlgorant?.assets ?? 0) + (+dataAlgorant?.transaction ?? 0)}</h2>
       <Bar data={data} options={options} />
     </div>
   );
