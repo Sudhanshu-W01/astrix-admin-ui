@@ -42,6 +42,7 @@ const Home = () => {
   const [tickets, setTickets] = useState([]);
   const [ticketBuyers, setTicketBuyers] = useState([]);
   const [noData, setNoData] = useState(false);
+  const [hasUserMore, setHasUserMore] = useState<boolean>(true)
   const [hasMore, setHasMore] = useState<boolean>(true)
   const [userData, setUserData] = useState<IUser>({
     username: "",
@@ -72,10 +73,13 @@ const Home = () => {
       const data = await fetchFunction();
       if(type === "user") {
         if(data?.length < 10){
-          setHasMore(false)
+          setHasUserMore(false)
         }
         setStateFunction([...users, ...data]);
       }else {
+        if(data?.length < 10){
+          setHasMore(false)
+        }
         setStateFunction(data);
       }
       if (setDataFlag) setNoData(!data.length);
@@ -192,7 +196,7 @@ const Home = () => {
               label={"Users"}
               data={users}
               type="user"
-              hasMore={hasMore}
+              hasMore={hasUserMore}
               fetchPaginated={fetchPaginated}
               page={page?.user}
               selectedRow={selectedRow}
@@ -210,6 +214,7 @@ const Home = () => {
                 data={events}
                 fetchPaginated={fetchPaginated}
                 page={page.event}
+                hasMore={hasMore}
                 type="event"
                 selectedRow={selectedRow}
                 handleClick={(index: any, data: any, label: string) =>
@@ -225,6 +230,7 @@ const Home = () => {
                 label={"Tickets"}
                 data={tickets}
                 type="ticket"
+                hasMore={hasMore}
                 fetchPaginated={fetchPaginated}
                 page={page?.ticket}
                 selectedRow={selectedRow}
@@ -239,6 +245,7 @@ const Home = () => {
                 label={"Buyers"}
                 data={ticketBuyers}
                 type="buyer"
+                hasMore={hasMore}
                 fetchPaginated={fetchPaginated}
                 page={page?.buyers}
                 selectedRow={selectedRow}
