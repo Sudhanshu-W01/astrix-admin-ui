@@ -19,6 +19,7 @@ const Post = () => {
   const [postComments, setPostComments] = useState([]);
   const [selectedRow, setSelectedRow] = useState<ISelected>({});
   const [hasNext, setHasNext] = useState<boolean>(true)
+  const [hasPostsNext, setHasPostsNext] = useState<boolean>(true)
   const [page, setPage] = useState({
     post: 1,
     commentUser: 1,
@@ -35,7 +36,7 @@ const Post = () => {
       const data = await fetchFunction();
       if(type === "post"){
         if(data?.length < 5) {
-          setHasNext(false)
+          setHasPostsNext(false)
         }
         setStateFunction([...posts,...data]);
       }else {
@@ -98,13 +99,13 @@ const Post = () => {
         <Loader />
       ) : (
         <div className="grid">
-          <div className="w-full overflow-scroll my_custom_scrollbar">
+          <div className="w-full flex flex-col gap-8 overflow-scroll my_custom_scrollbar">
             {posts && posts?.length ? (
               <TablePosts
                 label={"Posts"}
                 data={posts}
                 type="post"
-                hasMore={hasNext}
+                hasMore={hasPostsNext}
                 selectedRow={selectedRow}
                 handleClick={(index: any, data: any, label: string) =>
                   handlePostClick(index, data, label)
@@ -121,6 +122,7 @@ const Post = () => {
                 label={"Comments"}
                 data={postComments}
                 type="commentUser"
+                hasMore={hasNext}
                 selectedRow={selectedRow}
                 page={page?.commentUser}
                 fetchPaginated={fetchPaginated}

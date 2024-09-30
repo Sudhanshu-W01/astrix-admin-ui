@@ -23,6 +23,7 @@ const Collectibles = () => {
   const [collectibleBuyers, setCollectibleBuyers] = useState([]);
   const [selectedRow, setSelectedRow] = useState<ISelected>({});
   const [hasNext, setHasNext] = useState<boolean>(true)
+  const [hasCollectibleNext, setHasCollectibleNext] = useState<boolean>(true)
   const [page, setPage] = useState({
     collectibles: 1,
     buyers: 1,
@@ -45,8 +46,14 @@ const Collectibles = () => {
     try {
       const data = await fetchFunction();
       if(type === "collectible"){
+         if(data?.length < 10){
+          setHasCollectibleNext(false)
+         }
         setStateFunction([...collectibles,...data]);
       } else {
+        if(data?.length < 10){
+          setHasNext(false)
+         }
         setStateFunction(data);
       }
       if (setDataFlag) setNoData(!data.length);
@@ -104,7 +111,7 @@ const Collectibles = () => {
               label={"Collectibles"}
               data={collectibles}
               type="collectible"
-              hasMore={hasNext}
+              hasMore={hasCollectibleNext}
               page={page?.collectibles}
               fetchPaginated={fetchPaginated}
               selectedRow={selectedRow}
@@ -115,6 +122,7 @@ const Collectibles = () => {
                 label={"Buyers"}
                 data={collectibleBuyers}
                 type="buyer"
+                hasMore={hasNext}
                 fetchPaginated={fetchPaginated}
                 page={page?.buyers}
               />
