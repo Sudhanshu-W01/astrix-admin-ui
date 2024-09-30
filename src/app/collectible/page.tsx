@@ -25,7 +25,7 @@ const Collectibles = () => {
   const [hasNext, setHasNext] = useState<boolean>(true)
   const [hasCollectibleNext, setHasCollectibleNext] = useState<boolean>(true)
   const [page, setPage] = useState({
-    collectibles: 1,
+    collectible: 1,
     buyers: 1,
   });
   const {
@@ -100,6 +100,8 @@ const Collectibles = () => {
         break;
     }
   }
+
+  console.log(page, "pColl.........")
   return (
     <DefaultLayout>
       {loading ? (
@@ -112,7 +114,7 @@ const Collectibles = () => {
               data={collectibles}
               type="collectible"
               hasMore={hasCollectibleNext}
-              page={page?.collectibles}
+              page={page?.collectible}
               fetchPaginated={fetchPaginated}
               selectedRow={selectedRow}
               handleClick={handleCollectibleClick}
