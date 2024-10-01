@@ -1,6 +1,7 @@
 import axios from "axios";
 const DASHBOARD_API = "https://dash-astrix.azurewebsites.net";
 
+
 export const dashboardData = async () => {
   const { data } = await axios.get(
     `${DASHBOARD_API}/combineddata`,
