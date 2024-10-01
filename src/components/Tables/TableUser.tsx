@@ -17,7 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Loader from "../common/Loader";
 import InfiniteScrollLoader from "../common/infiniteScrollLoader";
-import { AllUsers } from "@/backendServices";
+import { AllUsers, EditUsersRole } from "@/backendServices";
 
 async function downloadTable(label: string)  {
   // Convert JSON to CSV
@@ -116,7 +116,6 @@ const TableUser = ({
   const dispatch = useDispatch();
   const [filteredData, setFilteredData] = useState(data);
   const { filterText, tags } = useSelector((state: RootState) => state.filter);
-  const [edit, setEdit] = useState(true);
   const [editIndex, setEditIndex] = useState<any>("");
   const [editValue, setEditValue] = useState<any>("");
   const [currentPage, setCurrentPage] = useState(page || 1)
@@ -125,18 +124,18 @@ const TableUser = ({
     dispatch(clearTags());
   }, []);
 
-  function showNext(page: number, type: string) {
-    const newPage = page + 1;
-    fetchPaginated(newPage, type);
-  }
-  function showPrev(page: number, type: string) {
-    if (page == 1) {
-      fetchPaginated(page, type);
-      return;
-    }
-    const newPage = page - 1;
-    fetchPaginated(newPage, type);
-  }
+  // function showNext(page: number, type: string) {
+  //   const newPage = page + 1;
+  //   fetchPaginated(newPage, type);
+  // }
+  // function showPrev(page: number, type: string) {
+  //   if (page == 1) {
+  //     fetchPaginated(page, type);
+  //     return;
+  //   }
+  //   const newPage = page - 1;
+  //   fetchPaginated(newPage, type);
+  // }
   useEffect(() => {
     let updatedData = data;
 
@@ -170,8 +169,6 @@ const TableUser = ({
     setFilteredData(updatedData);
   }, [filterText, tags, data]);
 
-  console.log(currentPage, "page........")
-// console.log(filteredData, "data...........")
 
   const fetchMoreData = () => {
     fetchPaginated(currentPage + 1, type)
@@ -225,9 +222,14 @@ const TableUser = ({
     setFilteredData(sorted);
   };
 
-  const handleEditSave = () => {
-    setEditIndex("")
 
+  const handleEditSave = async (index: any) => {
+    const data = await EditUsersRole(filteredData[index]?.username, editValue)
+    setEditIndex("")
+    if(data?.status){
+      fetchPaginated(currentPage, type)
+    }
+    console.log(data, "d........")
   }
 
   return (
@@ -455,7 +457,7 @@ const TableUser = ({
                                   </p>
                                 )}
                                 
-                                {editIndex === key ? <button onClick={handleEditSave}>save</button> : 
+                                {editIndex === key ? <button onClick={() => handleEditSave(key)}>save</button> : 
                                 <Image
                                 onClick={() => {
                                   setEditIndex(key)

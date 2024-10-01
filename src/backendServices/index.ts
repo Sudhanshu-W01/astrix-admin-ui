@@ -36,6 +36,16 @@ export const AllPosts = async (page: number = 1, items: number = 5) => {
   return data.posts;
 };
 
+export const EditUsersRole = async (userName: string, role: string) => {
+  const { data } = await axios.patch(
+    `${DASHBOARD_API}/user/${userName}`,
+    {
+      role: role
+    }
+  );
+  return data;
+};
+
 export const getEventTickets = async (
   eventId: string,
   username: string,

@@ -101,7 +101,6 @@ const Collectibles = () => {
     }
   }
 
-  console.log(page, "pColl.........")
   return (
     <DefaultLayout>
       {loading ? (
