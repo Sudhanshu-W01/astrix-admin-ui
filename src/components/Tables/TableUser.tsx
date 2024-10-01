@@ -18,6 +18,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import Loader from "../common/Loader";
 import InfiniteScrollLoader from "../common/infiniteScrollLoader";
 import { AllUsers, EditUsersRole } from "@/backendServices";
+import { useRouter } from "next/navigation";
 
 async function downloadTable(label: string)  {
   // Convert JSON to CSV
@@ -119,7 +120,7 @@ const TableUser = ({
   const [editIndex, setEditIndex] = useState<any>("");
   const [editValue, setEditValue] = useState<any>("");
   const [currentPage, setCurrentPage] = useState(page || 1)
-
+const router = useRouter();
   useEffect(() => {
     dispatch(clearTags());
   }, []);
@@ -172,12 +173,6 @@ const TableUser = ({
 
   const fetchMoreData = () => {
     fetchPaginated(currentPage + 1, type)
-      .then((newData: any) => {
-       
-      })
-      .catch((error: any) => {
-        console.error("Error fetching more data: ", error);
-      });
   };  
 
   const highlightText = (text: string, search: string) => {
@@ -228,9 +223,12 @@ const TableUser = ({
     setEditIndex("")
     if(data?.status){
       fetchPaginated(currentPage, type)
+      router.refresh()
     }
-    console.log(data, "d........")
   }
+
+  console.log(filteredData, "fil.......")
+  console.log(data, "dat.......")
 
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 ">
@@ -252,7 +250,7 @@ const TableUser = ({
       <div className="w-full">
         <div id="table-scrollable" className="flex max-h-[80vh] w-full flex-col my_custom_scrollbar overflow-scroll">
         <InfiniteScroll
-          dataLength={filteredData.length} 
+          dataLength={filteredData?.length} 
           next={fetchMoreData}
           hasMore={hasMore} 
           loader={<InfiniteScrollLoader />}
