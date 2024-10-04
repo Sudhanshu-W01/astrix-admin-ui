@@ -16,7 +16,6 @@ import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useDispatch, useSelector } from "react-redux";
 import InfiniteScrollLoader from "../common/infiniteScrollLoader";
-import EditEventPopup from "../editEvent/EditEventProps";
 import EventModal from "../editEvent/EventModal";
 
 async function downloadTable(label: string) {
