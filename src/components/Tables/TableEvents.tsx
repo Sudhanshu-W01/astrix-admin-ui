@@ -16,6 +16,8 @@ import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useDispatch, useSelector } from "react-redux";
 import InfiniteScrollLoader from "../common/infiniteScrollLoader";
+import EditEventPopup from "../editEvent/EditEventProps";
+import EventModal from "../editEvent/EventModal";
 
 async function downloadTable(label: string) {
   const { data } = await axios.get(
@@ -77,22 +79,25 @@ const TableEvents = ({
 }) => {
   const dispatch = useDispatch();
   const [filteredData, setFilteredData] = useState(data)
+  const [editEventData, setEditEventData] = useState<any>("")
   const { filterText, tags } = useSelector((state: RootState) => state.filter);
-  
+  const [isEditEvent, setIsEditEvent] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(page || 1)
+  const [editPropModal, setEditPropModal] = useState(false)
 
-  function showNext(page: number, type: string) {
-    const newPage = page + 1;
-    fetchPaginated(newPage, type);
-  }
-  function showPrev(page: number, type: string) {
-    if (page == 1) {
-      fetchPaginated(page, type);
-      return;
-    }
-    const newPage = page - 1;
-    fetchPaginated(newPage, type);
-  }
+  // function showNext(page: number, type: string) {
+  //   const newPage = page + 1;
+  //   fetchPaginated(newPage, type);
+  // }
+  // function showPrev(page: number, type: string) {
+  //   if (page == 1) {
+  //     fetchPaginated(page, type);
+  //     return;
+  //   }
+  //   const newPage = page - 1;
+  //   fetchPaginated(newPage, type);
+  // }
 
   const handleDateSortReverse = (date : any) => {
     console.log(date, "date...")
@@ -134,6 +139,8 @@ const TableEvents = ({
       sorted.reverse();
     setFilteredData(sorted);
   }
+
+
 
   useEffect(() => {
     dispatch(clearTags())
@@ -182,19 +189,16 @@ const TableEvents = ({
   };
 
   const fetchMoreData = () => {
+    filterText?.length < 1 ? 
     fetchPaginated(currentPage + 1, type)
-      .then((newData: any) => {
-        if (newData.length === 0) {
-        } else {
-          setFilteredData((prevData: any) => [...prevData, ...newData]);
-          setCurrentPage(currentPage + 1); // Update current page
-        }
-      })
-      .catch((error: any) => {
-        console.error("Error fetching more data: ", error);
-      });
+    : null
   };  
 
+  const handleEditEvent = (index: any) => {
+    setEditEventData(filteredData[index])
+    setIsModalOpen(true)
+  }
+console.log(editEventData, "..........")
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 ">
       <h4 className="mb-6 flex items-center justify-between text-xl font-semibold text-black dark:text-white">
@@ -213,13 +217,21 @@ const TableEvents = ({
         )}
       </h4>
 
+      {/* {isModalOpen && 
+      <EventModal
+        eventData={editEventData}
+        isOpen={setIsModalOpen}
+        setEditEventData={setEditEventData}
+      />
+      } */}
+
       <div className="w-full ">
         <div id="table-scrollable" className="flex w-full max-h-[80vh] flex-col my_custom_scrollbar overflow-scroll">
         <InfiniteScroll
-          dataLength={filteredData.length} 
+          dataLength={filteredData ? filteredData.length : null} 
           next={fetchMoreData} 
           hasMore={hasMore}
-          loader={<InfiniteScrollLoader />}
+          loader={filterText?.length < 1 ? <InfiniteScrollLoader /> : null}
           endMessage={<p className="h-[20vh] flex w-full items-center justify-center">No more data to load.</p>} 
           scrollableTarget="table-scrollable"
         >
@@ -307,6 +319,7 @@ const TableEvents = ({
                       {"Change Role"}
                     </th>
                   )}
+                  <th>Edit</th>
               </tr>
             </thead>
             <tbody className="divide-gray-200 divide-y bg-white">
@@ -403,10 +416,12 @@ const TableEvents = ({
                         )
                       
                     )}
-                    
+                    <td onClick={(e) => {e.stopPropagation();handleEditEvent(key)}} className="p-2 text-blue-400 cursor-pointer hover:underline">
+                      Edit</td>
                   </tr>
                 );
               })}
+              
             </tbody>
           </table>
           </InfiniteScroll>

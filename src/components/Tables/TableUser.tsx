@@ -120,6 +120,7 @@ const TableUser = ({
   const [editIndex, setEditIndex] = useState<any>("");
   const [editValue, setEditValue] = useState<any>("");
   const [currentPage, setCurrentPage] = useState(page || 1)
+
 const router = useRouter();
   useEffect(() => {
     dispatch(clearTags());
@@ -137,18 +138,19 @@ const router = useRouter();
   //   const newPage = page - 1;
   //   fetchPaginated(newPage, type);
   // }
+
   useEffect(() => {
     let updatedData = data;
 
     // Filter by tags
     if (filterText) {
-      if (tags.length > 0) {
+      if (tags?.length > 0) {
         updatedData = data.filter((row: any) =>
           tags.some((key: string) => {
             const value = row[key];
             return (
               value &&
-              String(value).toLowerCase().includes(filterText.toLowerCase())
+              String(value).toLowerCase().includes(filterText?.toLowerCase())
             );
           }),
         );
@@ -160,19 +162,20 @@ const router = useRouter();
               value &&
               keys !== "avatar" &&
               keys !== "coverImg" &&
-              String(value).toLowerCase().includes(filterText.toLowerCase())
+              String(value).toLowerCase().includes(filterText?.toLowerCase())
             );
           }),
         );
       }
     }
-
     setFilteredData(updatedData);
   }, [filterText, tags, data]);
 
 
   const fetchMoreData = () => {
+    filterText?.length < 1 ? 
     fetchPaginated(currentPage + 1, type)
+    : null
   };  
 
   const highlightText = (text: string, search: string) => {
@@ -253,7 +256,7 @@ const router = useRouter();
           dataLength={filteredData?.length} 
           next={fetchMoreData}
           hasMore={hasMore} 
-          loader={<InfiniteScrollLoader />}
+          loader={filterText?.length < 1 ? <InfiniteScrollLoader /> : null}
           endMessage={<p className="h-[20vh] flex w-full items-center justify-center">No more data to load.</p>}
           scrollableTarget="table-scrollable"
         >

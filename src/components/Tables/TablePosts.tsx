@@ -200,17 +200,9 @@ const TablePosts = ({
   };
 
   const fetchMoreData = () => {
+    filterText?.length < 1 ? 
     fetchPaginated(currentPage + 1, type)
-      .then((newData: any) => {
-        if (newData.length === 0) {
-        } else {
-          setFilteredData((prevData: any) => [...prevData, ...newData]);
-          setCurrentPage(currentPage + 1); // Update current page
-        }
-      })
-      .catch((error: any) => {
-        console.error("Error fetching more data: ", error);
-      });
+    : null
   };  
 
   return (
@@ -237,7 +229,7 @@ const TablePosts = ({
           dataLength={filteredData.length} 
           next={fetchMoreData} 
           hasMore={hasMore}
-          loader={<InfiniteScrollLoader />}
+          loader={filterText?.length < 1 ? <InfiniteScrollLoader /> : null}
           endMessage={<p className="h-[20vh] flex w-full items-center justify-center">No more data to load.</p>} 
           scrollableTarget="table-scrollable"
         >

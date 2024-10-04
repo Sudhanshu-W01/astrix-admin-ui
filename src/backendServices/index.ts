@@ -1,18 +1,19 @@
 import axios from "axios";
 const DASHBOARD_API = "https://dash-astrix.azurewebsites.net";
+// const DASHBOARD_API = "https://965b-2401-4900-8841-3999-7675-ec1-8d87-f2cf.ngrok-free.app";
 
 
 export const dashboardData = async () => {
   const { data } = await axios.get(
     `${DASHBOARD_API}/combineddata`,
-    
   );
   return data;
 };
 
-export const AllUsers = async (page: number = 1, items: number = 10) => {
+export const AllUsers = async (page: number = 1, items: number = 5000) => {
   const { data } = await axios.get(
     `${DASHBOARD_API}/users?page=${page}&items=${items}`,
+    {headers : {"ngrok-skip-browser-warning": "69420",}}
   );
   return data.users;
 };
@@ -27,6 +28,7 @@ export const AllCollectibles = async (page: number = 1, items: number = 10) => {
 export const AllEvents = async (page: number = 1, items: number = 10) => {
   const { data } = await axios.get(
     `${DASHBOARD_API}/events?page=${page}&items=${items}`,
+    {headers : {"ngrok-skip-browser-warning": "69420",}}
   );
   return data.events;
 };
@@ -43,6 +45,17 @@ export const EditUsersRole = async (userName: string, role: string) => {
     `${DASHBOARD_API}/user/${userName}`,
     {
       role: role
+    }
+  );
+  return data;
+};
+
+export const EditEventsAndTicketAddition = async (userName: string, eventId: string, ticketData: any[any], eventData: any) => {
+  const { data } = await axios.post(
+    `${DASHBOARD_API}/event/${eventId}/${userName}`,
+    {
+      event: eventData,
+      tickets: ticketData
     }
   );
   return data;
