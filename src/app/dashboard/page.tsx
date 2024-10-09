@@ -25,7 +25,7 @@ const Dashboard = () => {
       if(dashData?.status){
         setData(dashData?.data)
       } else {
-        alert("Error fetching data")
+        console?.log("Error fetching data")
       }
       return data;
     } catch (err: any) {

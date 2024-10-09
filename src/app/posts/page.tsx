@@ -100,7 +100,6 @@ const Post = () => {
       ) : (
         <div className="grid">
           <div className="w-full flex flex-col gap-8 overflow-scroll my_custom_scrollbar">
-            {posts && posts?.length ? (
               <TablePosts
                 label={"Posts"}
                 data={posts}
@@ -113,9 +112,7 @@ const Post = () => {
                 page={page?.post}
                 fetchPaginated={fetchPaginated}
               />
-            ) : (
-              ""
-            )}
+           
 
             {postComments?.length > 0 ? (
               <TableOne

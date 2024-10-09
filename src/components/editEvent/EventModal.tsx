@@ -300,16 +300,16 @@ if(modifiedFields?.images){
           {/* Image */}
           {formData?.images && (
             <div className="relative h-[250px] w-full">
-              <input
+              {/* <input
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
                 id="fileInput"
                 className="hidden"
-              />
+              /> */}
               <label htmlFor="fileInput">
                 <Image
-                  className="cursor-pointer object-cover"
+                  className=" object-cover"
                   src={selectedImage || formData?.images}
                   alt="images"
                   fill
@@ -389,7 +389,7 @@ if(modifiedFields?.images){
                 </div>
 
                 {/* Image upload for each ticket */}
-                <div>
+                {/* <div>
                   <label className="text-gray-700 block text-sm font-medium">
                     Ticket Image
                   </label>
@@ -404,7 +404,7 @@ if(modifiedFields?.images){
                       )
                     }
                   />
-                </div>
+                </div> */}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>

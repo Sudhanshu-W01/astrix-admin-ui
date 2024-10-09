@@ -17,6 +17,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { useDispatch, useSelector } from "react-redux";
 import InfiniteScrollLoader from "../common/infiniteScrollLoader";
 import EventModal from "../editEvent/EventModal";
+import Loader from "../common/Loader";
 
 async function downloadTable(label: string) {
   const { data } = await axios.get(
@@ -77,7 +78,7 @@ const TableEvents = ({
   page?: number;
 }) => {
   const dispatch = useDispatch();
-  const [filteredData, setFilteredData] = useState(data)
+  const [filteredData, setFilteredData] = useState<any>(data || [])
   const [editEventData, setEditEventData] = useState<any>("")
   const { filterText, tags } = useSelector((state: RootState) => state.filter);
   const [isEditEventIndex, setIsEditEventIndex] = useState<any>(null);
@@ -145,9 +146,9 @@ const TableEvents = ({
   }, [])
 
   useEffect(() => {
-    let updatedData= [...filteredData]
+    if(filteredData?.length > 0){let updatedData= [...filteredData]
       updatedData[isEditEventIndex] = editEventData;
-      setFilteredData(updatedData)
+      setFilteredData(updatedData)}
   }, [editEventData])
 
   useEffect(() => {
@@ -155,7 +156,7 @@ const TableEvents = ({
 
     // Filter by tags
     if (filterText) {
-      if (tags.length > 0) {
+      if (tags.length > 0 && filteredData) {
         updatedData = data.filter((row: any) =>
           tags.some((key: string) => {
             const value = row[key];
@@ -165,7 +166,7 @@ const TableEvents = ({
           })
         );
       } else {
-        updatedData = data.filter((row: any) =>
+        updatedData = data?.filter((row: any) =>
           Object.keys(row).some((keys: any) =>{
             const value = row[keys];
             return (
@@ -233,10 +234,10 @@ const TableEvents = ({
       <div className="w-full ">
         <div id="table-scrollable" className="flex w-full max-h-[80vh] flex-col my_custom_scrollbar overflow-scroll">
         <InfiniteScroll
-          dataLength={filteredData ? filteredData.length : null} 
+          dataLength={filteredData?.length > 0 ? filteredData?.length : 0} 
           next={fetchMoreData} 
           hasMore={hasMore}
-          loader={filterText?.length < 1 ? <InfiniteScrollLoader /> : null}
+          loader={!filteredData ? <p className="flex items-center justify-center h-[80vh]">No data Found</p> : filteredData?.length < 1 ? <InfiniteScrollLoader /> : null}
           endMessage={<p className="h-[20vh] flex w-full items-center justify-center">No more data to load.</p>} 
           scrollableTarget="table-scrollable"
         >
@@ -331,7 +332,7 @@ const TableEvents = ({
               </tr>
             </thead>
             <tbody className="divide-gray-200 divide-y bg-white">
-              {filteredData?.map((item: any, key: number) => {
+              {filteredData?.length > 0 && filteredData?.map((item: any, key: number) => {
                 const isSelected =
                   selectedRow && selectedRow[label.toLowerCase()] === key;
                 return (

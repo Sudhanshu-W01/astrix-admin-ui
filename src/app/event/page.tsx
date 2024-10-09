@@ -48,6 +48,7 @@ const Event = () => {
     type === "buyer" ? setBuyerLoading(true) : setLoading(true);
     try {
       const data = await fetchFunction();
+      console.log(data, "Error fetching data")
       if(type === "event"){
         if(data?.length < 10){
           setHasEventNext(false)

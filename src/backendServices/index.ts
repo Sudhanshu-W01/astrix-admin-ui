@@ -1,53 +1,85 @@
 import axios from "axios";
-// const DASHBOARD_API = "https://dash-astrix.azurewebsites.net";
-const DASHBOARD_API = "https://adcf-2401-4900-8841-808d-d7d2-684c-8585-5401.ngrok-free.app";
+import toast from "react-hot-toast";
+const DASHBOARD_API = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 
 export const dashboardData = async () => {
-  const { data } = await axios.get(
-    `${DASHBOARD_API}/combineddata`,
-  );
-  return data;
+  try {
+    const { data } = await axios.get(
+      `${DASHBOARD_API}/combineddata`,
+    );
+    return data;
+  } catch (error) {
+    toast.error("Error Fetching Data")
+  }
+  
 };
 
 export const AllUsers = async (page: number = 1, items: number = 5000) => {
-  const { data } = await axios.get(
-    `${DASHBOARD_API}/users?page=${page}&items=${items}`,
-    {headers : {"ngrok-skip-browser-warning": "69420",}}
-  );
-  return data.users;
+  try {
+    const { data } = await axios.get(
+      `${DASHBOARD_API}/users?page=${page}&items=${items}`,
+      {headers : {"ngrok-skip-browser-warning": "69420",}}
+    );
+    return data.users;
+  } catch (error) {
+    toast.error("Error Fetching Data")
+    // return error;
+  }
+  
 };
 
 export const AllCollectibles = async (page: number = 1, items: number = 10) => {
-  const { data } = await axios.get(
-    `${DASHBOARD_API}/collectible?page=${page}&items=${items}`,
-  );
-  return data.collectibles;
+  try {
+    const { data } = await axios.get(
+      `${DASHBOARD_API}/collectible?page=${page}&items=${items}`,
+    );
+    return data.collectibles;
+  } catch (error) {
+    toast.error("Error Fetching Data")
+    // return error;
+  }
+  
 };
 
 export const AllEvents = async (page: number = 1, items: number = 10) => {
-  const { data } = await axios.get(
-    `${DASHBOARD_API}/events?page=${page}&items=${items}`,
-    {headers : {"ngrok-skip-browser-warning": "69420",}}
-  );
-  return data.events;
+  try {
+    const { data } = await axios.get(
+      `${DASHBOARD_API}/events?page=${page}&items=${items}`,
+      {headers : {"ngrok-skip-browser-warning": "69420",}}
+    );
+    return data.events;
+  } catch (error) {
+    toast.error("Error Fetching Data")
+    // return error;
+  }
 };
 
 export const AllPosts = async (page: number = 1, items: number = 5) => {
-  const { data } = await axios.get(
-    `${DASHBOARD_API}/posts?page=${page}&items=${items}`,
-  );
-  return data.posts;
+  try {
+    const { data } = await axios.get(
+      `${DASHBOARD_API}/posts?page=${page}&items=${items}`,
+    );
+    return data.posts;
+  } catch (error) {
+    toast.error("Error Fetching Data")
+    // return error
+  }
 };
 
 export const EditUsersRole = async (userName: string, role: string) => {
-  const { data } = await axios.patch(
-    `${DASHBOARD_API}/user/${userName}`,
-    {
-      role: role
-    }
-  );
-  return data;
+  try {
+    const { data } = await axios.patch(
+      `${DASHBOARD_API}/user/${userName}`,
+      {
+        role: role
+      }
+    );
+    return data;
+  } catch (error) {
+    toast.error("Error Fetching Data")
+    // return error
+  }
 };
 
 export const EditEventsAndTicketAddition = async (userName: string, eventId: string, payload: any) => {
@@ -61,6 +93,7 @@ export const EditEventsAndTicketAddition = async (userName: string, eventId: str
   return data;
 }
 catch(err) {
+  // toast.error("Error Fetching Data")
 return err
 }
   
@@ -72,21 +105,36 @@ export const getEventTickets = async (
   page: number = 1,
   items: number = 10,
 ) => {
-  const { data } = await axios.get(
-    `${DASHBOARD_API}/ticket/${eventId}/${username}?page=${page}&items=${items}`,
-  );
-  return data?.Tickets;
+  try {
+    const { data } = await axios.get(
+      `${DASHBOARD_API}/ticket/${eventId}/${username}?page=${page}&items=${items}`,
+    );
+    return data?.Tickets;
+  } catch (error) {
+    toast.error("Error Fetching Data")
+    // return error
+  }
+  
 };
+
+
 export const getTicketsBuyers = async (
   ticketId: string,
   username: string,
   page: number = 1,
   items: number = 10,
 ) => {
-  const { data } = await axios.get(
-    `${DASHBOARD_API}/ticketbuyers/${ticketId}/${username}?page=${page}&items=${items}`,
-  );
-  return data.ticketBuyers;
+
+  try {
+    const { data } = await axios.get(
+      `${DASHBOARD_API}/ticketbuyers/${ticketId}/${username}?page=${page}&items=${items}`,
+    );
+    return data.ticketBuyers;
+  } catch (error) {
+    toast.error("Error Fetching Data")
+    // return error;
+  }
+  
 };
 
 export const getUserEvents = async (
@@ -94,17 +142,30 @@ export const getUserEvents = async (
   page: number = 1,
   items: number = 10,
 ) => {
-  const { data } = await axios.get(
-    `${DASHBOARD_API}/users/events/${username}?page=${page}&items=${items}`,
-  );
-  return data.usersEvents;
+
+  try {
+    const { data } = await axios.get(
+      `${DASHBOARD_API}/users/events/${username}?page=${page}&items=${items}`,
+    );
+    return data.usersEvents;
+  } catch (error) {
+    toast.error("Error Fetching Data")
+    // return error 
+  }
+  
 };
 
 export const getUserCollectibles = async (username: string) => {
-  const { data } = await axios.get(
-    `${DASHBOARD_API}/users/collectibles/${username}`,
-  );
-  return data.userCollectibles;
+  try {
+    const { data } = await axios.get(
+      `${DASHBOARD_API}/users/collectibles/${username}`,
+    );
+    return data.userCollectibles;
+  } catch (error) {
+    toast.error("Error Fetching Data")
+    // return error
+  }
+  
 };
 
 export const getCollectibleBuyers = async (
@@ -112,10 +173,16 @@ export const getCollectibleBuyers = async (
   page: number = 1,
   items: number = 10,
 ) => {
-  const { data } = await axios.get(
-    `${DASHBOARD_API}/collectiblebuyers/${cId}&page=${page}&items=${items}`,
-  );
-  return data?.collectibleBuyers;
+  try {
+    const { data } = await axios.get(
+      `${DASHBOARD_API}/collectiblebuyers/${cId}&page=${page}&items=${items}`,
+    );
+    return data?.collectibleBuyers;
+  } catch (error) {
+    toast.error("Error Fetching Data")
+    // return error
+  }
+  
 };
 // /post/comment/:postId/:username
 export const getUserCommentOnPost = async (

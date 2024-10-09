@@ -112,7 +112,7 @@ const TableCollectibles = ({
 }) => {
   const dispatch = useDispatch();
   const [users, setusers] = useState(data);
-  const [filteredData, setFilteredData] = useState(data)
+  const [filteredData, setFilteredData] = useState(data || [])
   const [currentPage, setCurrentPage] = useState(page || 1)
   const { filterText, tags } = useSelector((state: RootState) => state.filter);
   const handleRoleChange = (username: string, newRole: string) => {
@@ -160,7 +160,7 @@ const TableCollectibles = ({
 
     // Filter by tags
     if (filterText) {
-      if (tags.length > 0) {
+      if (tags.length > 0 && filteredData) {
         updatedData = data.filter((row: any) =>
           tags.some((key: string) => {
             const value = row[key];
@@ -170,7 +170,7 @@ const TableCollectibles = ({
           })
         );
       } else {
-        updatedData = data.filter((row: any) =>
+        updatedData = data?.filter((row: any) =>
           Object.keys(row).some((keys: any) =>{
             const value = row[keys];
             return (
@@ -205,7 +205,7 @@ const TableCollectibles = ({
     : null
   };  
 
-  
+  console.log(filteredData, "filter.........")
 
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 ">
@@ -228,10 +228,10 @@ const TableCollectibles = ({
       <div className="w-full ">
         <div id="table-scrollable" className="flex w-full max-h-[80vh] flex-col my_custom_scrollbar overflow-scroll">
         <InfiniteScroll
-          dataLength={filteredData.length} 
+          dataLength={filteredData?.length > 0 ? filteredData?.length : 0} 
           next={fetchMoreData}
           hasMore={hasMore}
-          loader={filterText?.length < 1 ? <InfiniteScrollLoader /> : null}
+          loader={!filteredData ? <p className="flex items-center justify-center h-[80vh]">No data Found</p> : filteredData?.length < 1 ? <InfiniteScrollLoader /> : null}
           endMessage={<p className="h-[20vh] flex w-full items-center justify-center">No more data to load.</p>} 
           scrollableTarget="table-scrollable"
         >
@@ -265,7 +265,7 @@ const TableCollectibles = ({
               </tr>
             </thead>
             <tbody className="divide-gray-200 divide-y bg-white">
-              {filteredData?.map((item: any, key: number) => {
+              {filteredData?.length > 0 && filteredData?.map((item: any, key: number) => {
                 const isSelected =
                   selectedRow && selectedRow[label.toLowerCase()] === key;
                 return (

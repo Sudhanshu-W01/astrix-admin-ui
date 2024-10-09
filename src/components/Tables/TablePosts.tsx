@@ -160,7 +160,7 @@ const TablePosts = ({
 
     // Filter by tags
     if (filterText) {
-      if (tags.length > 0) {
+      if (tags.length > 0 && filteredData) {
         updatedData = data.filter((row: any) =>
           tags.some((key: string) => {
             const value = row[key];
@@ -171,7 +171,7 @@ const TablePosts = ({
           })
         );
       } else {
-        updatedData = data.filter((row: any) =>
+        updatedData = data?.filter((row: any) =>
           Object.keys(row).some((keys: any) =>{
             const value = row[keys];
             return (
@@ -208,8 +208,8 @@ const TablePosts = ({
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 ">
       <h4 className="mb-6 flex items-center justify-between text-xl font-semibold text-black dark:text-white">
-        {label ?? "Table One"}
-        {data.length ? (
+        {label ?? "Table Posts"}
+        {filteredData?.length ? (
           <span
             className="cursor-pointer rounded-full border bg-boxdark px-2 py-1 text-sm text-white"
             onClick={() => {
@@ -226,10 +226,10 @@ const TablePosts = ({
       <div className="w-full ">
         <div id="table-scrollable" className="flex max-h-[52vh] w-full flex-col my_custom_scrollbar overflow-scroll">
         <InfiniteScroll
-          dataLength={filteredData.length} 
+          dataLength={filteredData?.length > 0 ? filteredData?.length : 0} 
           next={fetchMoreData} 
           hasMore={hasMore}
-          loader={filterText?.length < 1 ? <InfiniteScrollLoader /> : null}
+          loader={!filteredData ? <p className="flex items-center justify-center h-[52vh]">No data Found</p> : filteredData?.length < 1 ? <InfiniteScrollLoader /> : null}
           endMessage={<p className="h-[20vh] flex w-full items-center justify-center">No more data to load.</p>} 
           scrollableTarget="table-scrollable"
         >
@@ -263,7 +263,8 @@ const TablePosts = ({
                   label != "Collectibles" &&
                   label != "Comments" &&
                   label != "Buyers" &&
-                  label != "Tickets" && (
+                  label != "Tickets" &&
+                  filteredData && (
                     <th className="text-gray-500 whitespace-nowrap px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">
                       {"Change Role"}
                     </th>
@@ -271,7 +272,7 @@ const TablePosts = ({
               </tr>
             </thead>
             <tbody className="divide-gray-200 divide-y bg-white">
-              {filteredData?.map((item: any, key: number) => {
+              {filteredData && filteredData?.map((item: any, key: number) => {
                 const isSelected =
                   selectedRow && selectedRow[label.toLowerCase()] === key;
                 return (
