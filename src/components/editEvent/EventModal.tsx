@@ -208,7 +208,7 @@ if(modifiedFields?.images){
             method: "POST",
             body: formDataImage,
             headers: {
-              'Authorization': 'Bearer ' + "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEwOCwidXNlck5hbWUiOiJnb3VyYXZmb3JldmVyIiwiaXNPbmJvYXJkZWQiOnRydWUsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3Mjg2NTQwMjB9.rDUw_OR5yeA7mXxY3IUaDaU4QVGmJA6ovJqL4QROk8g",
+              'Authorization': 'Bearer ' + `${process.env.NEXT_PUBLIC_AUTHORIZATION_TOKEN}`,
             }
           },
           
