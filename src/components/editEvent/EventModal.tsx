@@ -1,19 +1,15 @@
 import React, { useState } from "react";
-import {
-  Button,
-  Dialog,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-} from "@material-tailwind/react";
 import Image from "next/image";
 import { EditEventsAndTicketAddition } from "@/backendServices";
+import toast from 'react-hot-toast';
+import Loader from "../common/Loader";
+
 
 interface EventData {
   eventId: string;
   name: string;
-  startDate: string;
-  endDate: string;
+  startDate: any;
+  endDate: any;
   venue: string;
   location: string;
   images: string;
@@ -38,14 +34,14 @@ interface EventModalProps {
 const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEventData }) => {
   const [formData, setFormData] = useState<EventData>(eventData);
   const [selectedImage, setSelectedImage] = useState(formData?.images);
-  const [tickets, setTickets] = useState<any[]>([]); // Array to store tickets
-  const [ticketImage, setTicketImage] = useState<string>(""); // Image for the current ticket
-
+  const [tickets, setTickets] = useState<any[any]>([]); // Array to store tickets
+const [loading, setLoading] = useState<boolean>(false)
   const [perksInput, setPerksInput] = useState({
     collectionName: "",
     collectibleName: "",
     ownerName: "",
   });
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -55,25 +51,83 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
   };
 
   const handleSave = async () => {
-    const data = await EditEventsAndTicketAddition(
-      eventData?.owner,
-      eventData?.eventId,
-      tickets,
-      formData,
-    );
-    if (data?.status) {
+    setLoading(true)
+  const startDateObj = new Date(eventData?.startDate);
+  const endDateObj = new Date(eventData?.endDate);
+
+  let modifiedFields: any = {};
+  
+  Object.keys(formData).forEach((key) => {
+    if (formData[key as keyof EventData] !== eventData[key as keyof EventData]) {
+      modifiedFields[key as keyof EventData] = formData[key as keyof EventData];
     }
-    console.log(data, "updated Event");
-    console.log("Updated Event Data:", formData);
-    setEditEventData(formData)
-    console.log("Tickets Data:", tickets);
+  });
+
+  if (
+    new Date(formData?.startDate).toISOString() !==
+    new Date(eventData?.startDate).toISOString()
+  ) {
+    modifiedFields.startDate = startDateObj.toISOString().split("T")[0];
+    modifiedFields.startTime = startDateObj.toISOString().split("T")[1].slice(0, 5);
+  }
+
+  if (
+    new Date(formData?.endDate).toISOString() !==
+    new Date(eventData?.endDate).toISOString()
+  ) {
+    modifiedFields.endDate = endDateObj.toISOString().split("T")[0];
+    modifiedFields.endTime = endDateObj.toISOString().split("T")[1].slice(0, 5);
+  }
+
+  
+  const ticketPayload = tickets?.map((ticket: any) => ({
+      ticketName: ticket?.ticketName,
+      description: ticket?.description,
+       image: ticket?.image,
+        issue_qty: +ticket?.issue_qty,
+         price: +ticket?.price,
+          max_qty: +ticket?.max_qty,
+           perks: [],
+            resale_royality: +ticket?.resale_royality,
+             transferable: ticket?.transferable,
+              state: ticket?.state,
+               rsvp: ticket?.rsvp
+  }))
+  
+if(modifiedFields?.images){
+  const updated = {...modifiedFields, images: [modifiedFields?.images]}
+  modifiedFields = updated;
+}
+  const payload = {
+    ...modifiedFields,
+    tickets: tickets.length < 1 ? [] : ticketPayload
+    // images: modifiedFields?.images ? [modifiedFields.images] : eventData?.images, // Include images if modified
   };
-  console.log(eventData, "evennnnnnnn");
+  const data = await EditEventsAndTicketAddition(
+    eventData?.owner,
+    eventData?.eventId,
+    payload
+  );
+  console.log(data, "err.........")
+  if (data?.status) {
+    setLoading(false)
+    console.log("Event updated successfully:", data);
+    setEditEventData(formData);
+    isOpen(false)
+    toast.success("Event Updated succesfully")
+  }else {
+    toast.error("Error" + data?.response?.data?.message)
+    setLoading(false)
+    isOpen(false)
+  }
+
+  setLoading(false)
+};
 
   const addTicket = () => {
     setTickets([
       ...tickets,
-      { ticketName: "", description: "", image: "", issueQty: 0, price: 0, maxQty: 0, resale_royality: 0, perks: [], transferable: false, state: "", rsvp: false },
+      { ticketName: "", description: "", image: "", issue_qty: "", price: "", max_qty: "", perks: [], resale_royality: "", transferable: false, state: "", rsvp: false },
     ]);
   };
 
@@ -89,28 +143,31 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
     file: any,
   ) => {
     if (file) {
-      const reader: any = new FileReader();
-      reader.onload = () => {
-        setSelectedImage(reader?.result);
-      };
-      reader.readAsDataURL(file);
-
-      const formData = new FormData();
-      formData.append("image", file);
+      const formDataImage = new FormData();
+      formDataImage.append("file", file);
 
       try {
         const response = await fetch(
-          "https://astrix-upload-staging.azurewebsites.net",
+          "http://localhost:8001/upload/eTickets",
           {
             method: "POST",
-            body: formData,
+            body: formDataImage,
+            headers: {
+              'Authorization': 'Bearer ' + "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEwOCwidXNlck5hbWUiOiJnb3VyYXZmb3JldmVyIiwiaXNPbmJvYXJkZWQiOnRydWUsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3Mjg2NTQwMjB9.rDUw_OR5yeA7mXxY3IUaDaU4QVGmJA6ovJqL4QROk8g",
+            }
           },
+          
         );
         const data = await response.json();
         console.log("Image uploaded successfully:", data);
-        const updatedTickets = [...tickets];
-        updatedTickets[index] = { ...updatedTickets[index], [field]: data };
-        setTickets(updatedTickets);
+        if(data?.status){
+          const updatedTickets = [...tickets];
+          updatedTickets[index] = { ...updatedTickets[index], image: data?.content?.uploadedUrl};
+          setTickets(updatedTickets);
+          toast.success("Image Uploaded succesfully")
+        }else {
+          toast.error("Error uploading image")
+        }
       } catch (error) {
         console.error("Error uploading image:", error);
       }
@@ -128,7 +185,7 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
       ...updatedTickets[index],
       perks: [updatedPerks], // Save the object in the perks array
     };
-    setTickets(updatedTickets);
+    // setTickets(updatedTickets);
   };
 
 
@@ -141,24 +198,33 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
       };
       reader.readAsDataURL(file);
 
-      const formData = new FormData();
-      formData.append("file", file);
+      const formDataImage = new FormData();
+      formDataImage.append("file", file);
 
       try {
         const response = await fetch(
-          "https://astrix-upload.azurewebsites.net/upload/:uploadType",
+          "http://localhost:8001/upload/eTickets",
           {
             method: "POST",
-            body: formData,
+            body: formDataImage,
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjMyNzUsInVzZXJOYW1lIjoidG9ybnV6IiwiaXNPbmJvYXJkZWQiOnRydWUsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3MjgzMDM5NDh9.4opbxHxnyR2U_Y5JI7WLXu41mOg6C-1kAZWd3nJBmOs",
+              'Authorization': 'Bearer ' + "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEwOCwidXNlck5hbWUiOiJnb3VyYXZmb3JldmVyIiwiaXNPbmJvYXJkZWQiOnRydWUsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3Mjg2NTQwMjB9.rDUw_OR5yeA7mXxY3IUaDaU4QVGmJA6ovJqL4QROk8g",
             }
           },
           
         );
         const data = await response.json();
-        console.log("Image uploaded successfully:", data);
+        if(data?.status){
+          console.log(data?.content?.uploadedUrl)
+          let updatedImage: any = {
+            ...formData,
+            images: data?.content?.uploadedUrl
+          };
+         setFormData(updatedImage)
+          toast.success("Image Uploaded succesfully")
+        }else {
+          toast.error("Error uploading image")
+        }
       } catch (error) {
         console.error("Error uploading image:", error);
       }
@@ -168,12 +234,12 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
   if (!isOpen) return null;
 
   return (
-    <div className="absolute inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
-      <div className="my_custom_scrollbar relative max-h-screen w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-8 shadow-lg">
+    <div className="fixed inset-0 z-[9999]  flex items-center justify-center bg-black bg-opacity-50">
+      <div className="my_custom_scrollbar max-h-[80vh] relative  w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-8 shadow-lg">
         <h2 className="text-gray-800 mb-6 text-2xl font-semibold">
           Edit Event
         </h2>
-        <div className="space-y-4">
+        {loading ? <Loader /> : <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             {/* Name */}
             <div>
@@ -210,7 +276,7 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
               <input
                 type="datetime-local"
                 name="startDate"
-                value={formData.startDate.slice(0, 16)} // Adjust for datetime-local input
+                value={formData?.startDate?.slice(0, 16)} // Adjust for datetime-local input
                 onChange={handleChange}
                 className="border-gray-300 mt-1 block w-full rounded-md border p-2"
               />
@@ -224,7 +290,7 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
               <input
                 type="datetime-local"
                 name="endDate"
-                value={formData.endDate.slice(0, 16)} // Adjust for datetime-local input
+                value={formData?.endDate?.slice(0, 16)} // Adjust for datetime-local input
                 onChange={handleChange}
                 className="border-gray-300 mt-1 block w-full rounded-md border p-2"
               />
@@ -278,20 +344,6 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
             />
           </div>
 
-          {/* Tags */}
-          <div>
-            <label className="text-gray-700 block text-sm font-medium">
-              Tags
-            </label>
-            <input
-              type="text"
-              name="tags"
-              value={formData.tags}
-              onChange={handleChange}
-              className="border-gray-300 mt-1 block w-full rounded-md border p-2"
-            />
-          </div>
-
           {/* Add Ticket Button */}
           <div className="mt-6 flex justify-end space-x-2">
             <button
@@ -302,7 +354,7 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
             </button>
           </div>
           <div className="">
-            {tickets.map((ticket, index) => (
+            {tickets.map((ticket: any, index: any) => (
               <div
                 key={index}
                 className="mt-4 space-y-4 rounded-lg border p-4 shadow-md"
@@ -361,13 +413,13 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
                     </label>
                     <input
                       type="number"
-                      name="issueQty"
-                      value={ticket.issueQty}
+                      name="issue_qty"
+                      value={ticket.issue_qty}
                       onChange={(e) =>
                         handleTicketChange(
                           index,
-                          "issueQty",
-                          Number(e.target.value),
+                          "issue_qty",
+                          (e.target.value),
                         )
                       }
                       className="border-gray-300 mt-1 block w-full rounded-md border p-2"
@@ -379,13 +431,13 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
                     </label>
                     <input
                       type="number"
-                      name="maxQty"
-                      value={ticket.maxQty}
+                      name="max_qty"
+                      value={ticket.max_qty}
                       onChange={(e) =>
                         handleTicketChange(
                           index,
-                          "maxQty",
-                          Number(e.target.value),
+                          "max_qty",
+                          (e.target.value),
                         )
                       }
                       className="border-gray-300 mt-1 block w-full rounded-md border p-2"
@@ -400,12 +452,12 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
                     <input
                       type="number"
                       name="resale_royality"
-                      value={ticket.issueQty}
+                      value={ticket.resale_royality}
                       onChange={(e) =>
                         handleTicketChange(
                           index,
                           "resale_royality",
-                          Number(e.target.value),
+                          (e.target.value),
                         )
                       }
                       className="border-gray-300 mt-1 block w-full rounded-md border p-2"
@@ -423,7 +475,7 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
                         handleTicketChange(
                           index,
                           "price",
-                          Number(e.target.value),
+                          (e.target.value),
                         )
                       }
                       className="border-gray-300 mt-1 block w-full rounded-md border p-2"
@@ -431,7 +483,7 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
                   </div>
                 </div>
 
-                <p>Perks</p>
+                {/*<p>Perks</p>
                 <div className="grid grid-cols-3 gap-4">
               <div>
                 <label>Collection Name</label>
@@ -466,7 +518,7 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
                   className="border-gray-300 mt-1 block w-full rounded-md border p-2"
                 />
               </div>
-            </div>
+            </div> */}
 
 
                 <div className="grid grid-cols-3 gap-4">
@@ -484,10 +536,10 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
                     className="border-gray-300 mt-1 block w-full rounded-md border p-2"
                   >
                     <option value="">Select State</option>
-                    <option value="Deleted">Deleted</option>
-                    <option value="Freezed">Freezed</option>
-                    <option value="Active">Active</option>
-                    <option value="Hidden">Hidden</option>
+                    <option value="deleted">Deleted</option>
+                    <option value="freezed">Freezed</option>
+                    <option value="active">Active</option>
+                    <option value="hidden">Hidden</option>
                   </select>
                 </div>
 
@@ -534,7 +586,7 @@ const EventModal: React.FC<EventModalProps> = ({ eventData, isOpen, setEditEvent
               Cancel
             </button>
           </div>
-        </div>
+        </div>}
       </div>
     </div>
   );

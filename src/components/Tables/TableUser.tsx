@@ -223,15 +223,24 @@ const router = useRouter();
 
   const handleEditSave = async (index: any) => {
     const data = await EditUsersRole(filteredData[index]?.username, editValue)
-    setEditIndex("")
+    
     if(data?.status){
-      fetchPaginated(currentPage, type)
-      router.refresh()
+      let updatedData = [...filteredData]
+      
+      updatedData[index] = {
+        ...updatedData[index],
+        role: editValue
+      }
+      console.log(updatedData, "up..")
+      console.log(updatedData[index], "upIndex..")
+      setFilteredData(updatedData)
+      setEditIndex("")
+      setEditValue("")
     }
   }
 
-  console.log(filteredData, "fil.......")
-  console.log(data, "dat.......")
+  // console.log(filteredData, "fil.......")
+  // console.log(data, "dat.......")
 
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 ">

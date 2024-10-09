@@ -1,6 +1,6 @@
 import axios from "axios";
-const DASHBOARD_API = "https://dash-astrix.azurewebsites.net";
-// const DASHBOARD_API = "https://965b-2401-4900-8841-3999-7675-ec1-8d87-f2cf.ngrok-free.app";
+// const DASHBOARD_API = "https://dash-astrix.azurewebsites.net";
+const DASHBOARD_API = "https://adcf-2401-4900-8841-808d-d7d2-684c-8585-5401.ngrok-free.app";
 
 
 export const dashboardData = async () => {
@@ -50,15 +50,20 @@ export const EditUsersRole = async (userName: string, role: string) => {
   return data;
 };
 
-export const EditEventsAndTicketAddition = async (userName: string, eventId: string, ticketData: any[any], eventData: any) => {
-  const { data } = await axios.post(
+export const EditEventsAndTicketAddition = async (userName: string, eventId: string, payload: any) => {
+  try{
+  const { data } = await axios.patch(
     `${DASHBOARD_API}/event/${eventId}/${userName}`,
-    {
-      event: eventData,
-      tickets: ticketData
-    }
+      payload
+    ,
+    {headers : {"ngrok-skip-browser-warning": "69420",}}
   );
   return data;
+}
+catch(err) {
+return err
+}
+  
 };
 
 export const getEventTickets = async (

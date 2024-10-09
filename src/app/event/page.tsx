@@ -153,7 +153,7 @@ const Event = () => {
               page={page?.event}
             />
 
-            {tickets.length ? (
+            {tickets?.length ? (
               <TableOne
                 label={"Tickets"}
                 data={tickets?.map((el: any) => {

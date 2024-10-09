@@ -80,7 +80,7 @@ const TableEvents = ({
   const [filteredData, setFilteredData] = useState(data)
   const [editEventData, setEditEventData] = useState<any>("")
   const { filterText, tags } = useSelector((state: RootState) => state.filter);
-  const [isEditEvent, setIsEditEvent] = useState(false);
+  const [isEditEventIndex, setIsEditEventIndex] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(page || 1)
   const [editPropModal, setEditPropModal] = useState(false)
@@ -99,7 +99,6 @@ const TableEvents = ({
   // }
 
   const handleDateSortReverse = (date : any) => {
-    console.log(date, "date...")
     const sorted = [...filteredData].sort(
       (a, b) => {
         const dateA = date === "startDate" 
@@ -144,6 +143,12 @@ const TableEvents = ({
   useEffect(() => {
     dispatch(clearTags())
   }, [])
+
+  useEffect(() => {
+    let updatedData= [...filteredData]
+      updatedData[isEditEventIndex] = editEventData;
+      setFilteredData(updatedData)
+  }, [editEventData])
 
   useEffect(() => {
     let updatedData = data;
@@ -194,10 +199,11 @@ const TableEvents = ({
   };  
 
   const handleEditEvent = (index: any) => {
+    setIsEditEventIndex(index)
     setEditEventData(filteredData[index])
     setIsModalOpen(true)
   }
-console.log(editEventData, "..........")
+
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 ">
       <h4 className="mb-6 flex items-center justify-between text-xl font-semibold text-black dark:text-white">
@@ -216,13 +222,13 @@ console.log(editEventData, "..........")
         )}
       </h4>
 
-      {/* {isModalOpen && 
+      {isModalOpen && 
       <EventModal
         eventData={editEventData}
         isOpen={setIsModalOpen}
         setEditEventData={setEditEventData}
       />
-      } */}
+      }
 
       <div className="w-full ">
         <div id="table-scrollable" className="flex w-full max-h-[80vh] flex-col my_custom_scrollbar overflow-scroll">
@@ -307,7 +313,10 @@ console.log(editEventData, "..........")
                   height={16}
                 /></p> </span> : key}
                     </th>
-                  ))}
+                  )
+                )}
+                {filteredData &&
+                  filteredData[0] != null && <th>Edit</th>}
                 {type !== "user" &&
                   label != "Events" &&
                   label != "Collectibles" &&
@@ -318,7 +327,7 @@ console.log(editEventData, "..........")
                       {"Change Role"}
                     </th>
                   )}
-                  <th>Edit</th>
+                  
               </tr>
             </thead>
             <tbody className="divide-gray-200 divide-y bg-white">
