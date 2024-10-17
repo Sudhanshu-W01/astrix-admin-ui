@@ -18,10 +18,11 @@ import { useDispatch, useSelector } from "react-redux";
 import InfiniteScrollLoader from "../common/infiniteScrollLoader";
 import EventModal from "../editEvent/EventModal";
 import Loader from "../common/Loader";
+import PromoteButton from "../PromoteEventButton";
 
 async function downloadTable(label: string) {
   const { data } = await axios.get(
-    `https://dash-astrix.azurewebsites.net/events`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/events`,
   );
 
 
@@ -85,6 +86,7 @@ const TableEvents = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(page || 1)
   const [editPropModal, setEditPropModal] = useState(false)
+  const [promoteModal, setPromoteModal] = useState<any>(false)
 
   // function showNext(page: number, type: string) {
   //   const newPage = page + 1;
@@ -205,6 +207,11 @@ const TableEvents = ({
     setIsModalOpen(true)
   }
 
+
+  const handleOpenPromote = (index: any) => {
+    setPromoteModal(true)
+  }
+  console.log(filteredData, "f............")
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 ">
       <h4 className="mb-6 flex items-center justify-between text-xl font-semibold text-black dark:text-white">
@@ -231,6 +238,10 @@ const TableEvents = ({
       />
       }
 
+      {promoteModal && 
+      <PromoteButton
+       isModalOpen={setPromoteModal}/> }
+
       <div className="w-full ">
         <div id="table-scrollable" className="flex w-full max-h-[80vh] flex-col my_custom_scrollbar overflow-scroll">
         <InfiniteScroll
@@ -244,10 +255,23 @@ const TableEvents = ({
           <table className="divide-gray-200 min-w-full divide-y ">
             <thead className="bg-gray-50 ">
               <tr>
+              {filteredData &&filteredData[0] != null &&
+              <>
+               <th
+                      className="text-gray-500 px-6 py-3 text-left  text-xs font-semibold uppercase tracking-wider"
+                    >EVENTID</th>
+              <th
+                      className="text-gray-500 px-6 py-3 text-left  text-xs font-semibold uppercase tracking-wider"
+                    >Name</th>
+              <th
+                      className="text-gray-500 px-6 py-3 text-left  text-xs font-semibold uppercase tracking-wider"
+                    >Promote</th>
+                    </>}
                 {filteredData &&
                   filteredData[0] != null &&
                   Object.keys(filteredData[0])?.map((key: any, index: number) => (
-                    <th
+                    key !== "name" && key !== "eventId" ?
+                    (<th
                       key={index}
                       className="text-gray-500 px-6 py-3 text-left  text-xs font-semibold uppercase tracking-wider"
                     >
@@ -313,9 +337,11 @@ const TableEvents = ({
                   width={16}
                   height={16}
                 /></p> </span> : key}
-                    </th>
+                    </th>): null
                   )
-                )}
+                )
+                
+                }
                 {filteredData &&
                   filteredData[0] != null && <th>Edit</th>}
                 {type !== "user" &&
@@ -381,8 +407,24 @@ const TableEvents = ({
                       }
                     }}
                   >
+
+<td className="text-gray-900 whitespace-nowrap px-6 py-4 text-sm font-medium">
+          {item.eventId ?? 'N/A'}
+        </td>
+        <td className="text-gray-900 whitespace-nowrap px-6 py-4 text-sm font-medium">
+          {item.name ?? 'N/A'}
+        </td>
+
+        {/* Display the Promote button next */}
+        <td
+          onClick={(e) => { e.stopPropagation(); handleOpenPromote(key); }}
+          className="p-2 text-blue-400 px-6 py-4 cursor-pointer hover:underline"
+        >
+          Promote
+        </td>
                     {Object.keys(item)?.map((values: any, ind: number) =>
-                        values === "status" ? (
+                     values !== 'eventId' && values !== 'name' ?
+                       ( values === "status" ? (
                           <td
                             key={ind}
                             className={`text-gray-900 whitespace-nowrap px-6 py-4 text-sm font-medium ${item[values] === "upcoming" ? "text-orange-500" : item[values] === "ongoing" ? "text-yellow-500" : item[values] === "completed" ? "text-green-500" : "text-black"}`}
@@ -422,11 +464,12 @@ const TableEvents = ({
                              :
                              item[values]}
                           </td>
-                        )
-                      
+                        )): null
+                       
                     )}
                     <td onClick={(e) => {e.stopPropagation();handleEditEvent(key)}} className="p-2 text-blue-400 cursor-pointer hover:underline">
                       Edit</td>
+                    
                   </tr>
                 );
               })}

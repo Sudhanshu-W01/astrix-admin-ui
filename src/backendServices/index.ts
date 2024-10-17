@@ -15,10 +15,11 @@ export const dashboardData = async () => {
   
 };
 
-export const AllUsers = async (page: number = 1, items: number = 5000) => {
+export const AllUsers = async (page: number = 1, items: number = 5000, viewEventDoc: any = true) => {
+  console.log(viewEventDoc, "--------------")
   try {
     const { data } = await axios.get(
-      `${DASHBOARD_API}/users?page=${page}&items=${items}`,
+      `${DASHBOARD_API}/${viewEventDoc ? "users": "rolechange"}?page=${page}&items=${items}`,
       {headers : {"ngrok-skip-browser-warning": "69420",}}
     );
     return data.users;
@@ -28,6 +29,19 @@ export const AllUsers = async (page: number = 1, items: number = 5000) => {
   }
   
 };
+// export const fetchRequestedUsers = async (page: number = 1, items: number = 5000) => {
+//   try {
+//     const { data } = await axios.get(
+//       `${DASHBOARD_API}/rolechange?page=${page}&items=${items}`,
+//       {headers : {"ngrok-skip-browser-warning": "69420",}}
+//     );
+//     return data.users;
+//   } catch (error) {
+//     toast.error("Error Fetching Data")
+//     // return error;
+//   }
+  
+// };
 
 export const AllCollectibles = async (page: number = 1, items: number = 10) => {
   try {
@@ -77,7 +91,24 @@ export const EditUsersRole = async (userName: string, role: string) => {
     );
     return data;
   } catch (error) {
-    toast.error("Error Fetching Data")
+    toast.error("Error Editing User")
+    // return error
+  }
+};
+export const EditViewDocStatus = async (userName: string, status: string) => {
+  try {
+    const { data } = await axios.post(
+      `${DASHBOARD_API}/rolechange/approve`,
+      
+      {
+        username: userName,
+        status: status === "approve"
+      },
+      {headers : {"ngrok-skip-browser-warning": "69420",}}
+    );
+    return data;
+  } catch (error) {
+    toast.error("Error Updating Status")
     // return error
   }
 };

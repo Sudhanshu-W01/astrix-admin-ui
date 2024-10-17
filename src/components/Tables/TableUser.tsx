@@ -17,10 +17,12 @@ import { useDispatch, useSelector } from "react-redux";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Loader from "../common/Loader";
 import InfiniteScrollLoader from "../common/infiniteScrollLoader";
-import { AllUsers, EditUsersRole } from "@/backendServices";
+import { AllUsers, EditUsersRole, EditViewDocStatus } from "@/backendServices";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import ViewEventDocument from "../ViewEventDocument";
 
-async function downloadTable(label: string)  {
+async function downloadTable(label: string) {
   // Convert JSON to CSV
 
   const { data } = await axios.get(
@@ -98,7 +100,9 @@ const RoleDropdown = ({
 const TableUser = ({
   label,
   data,
+  setViewDoc,
   type,
+  viewDoc,
   handleClick,
   selectedRow,
   hasMore,
@@ -108,7 +112,9 @@ const TableUser = ({
   label: string;
   data: any;
   type: string;
-  hasMore:boolean;
+  setViewDoc:any;
+  viewDoc:any;
+  hasMore: boolean;
   selectedRow?: any;
   handleClick?: any;
   fetchPaginated?: any;
@@ -119,9 +125,11 @@ const TableUser = ({
   const { filterText, tags } = useSelector((state: RootState) => state.filter);
   const [editIndex, setEditIndex] = useState<any>("");
   const [editValue, setEditValue] = useState<any>("");
-  const [currentPage, setCurrentPage] = useState(page || 1)
+  const [viewDocument, setViewDocument] = useState<any>(false);
+  const [viewRequestedUsers, setViewRequestedUsers] = useState<any>(true);
+  const [currentPage, setCurrentPage] = useState(page || 1);
 
-const router = useRouter();
+  const router = useRouter();
   useEffect(() => {
     dispatch(clearTags());
   }, []);
@@ -171,12 +179,9 @@ const router = useRouter();
     setFilteredData(updatedData);
   }, [filterText, tags, data]);
 
-
   const fetchMoreData = () => {
-    filterText?.length < 1 ? 
-    fetchPaginated(currentPage + 1, type)
-    : null
-  };  
+    filterText?.length < 1 ? fetchPaginated(currentPage + 1, type) : null;
+  };
 
   const highlightText = (text: string, search: string) => {
     if (!search) return text;
@@ -220,32 +225,62 @@ const router = useRouter();
     setFilteredData(sorted);
   };
 
-
   const handleEditSave = async (index: any) => {
-    const data = await EditUsersRole(filteredData[index]?.username, editValue)
-    
-    if(data?.status){
-      let updatedData = [...filteredData]
-      
+    const data = await EditUsersRole(filteredData[index]?.username, editValue);
+    console.log(data, "dat1.........");
+    if (data?.status) {
+      let updatedData = [...filteredData];
+
       updatedData[index] = {
         ...updatedData[index],
-        role: editValue
-      }
-      console.log(updatedData, "up..")
-      console.log(updatedData[index], "upIndex..")
-      setFilteredData(updatedData)
-      setEditIndex("")
-      setEditValue("")
+        role: editValue,
+      };
+      console.log(updatedData, "up..");
+      console.log(updatedData[index], "upIndex..");
+      setFilteredData(updatedData);
+      setEditIndex("");
+      setEditValue("");
+    } else {
+      console.log(data, "dat.........");
+    }
+  };
+
+  const handleViewDocStatus = async (username:any, status: string, index: any) => {
+    const data = await EditViewDocStatus(username,status);
+
+    if(data?.status){
+      toast.success("Status Updated succesfully")
+      const updatedStatus = [...filteredData]
+      updatedStatus[index] = {...updatedStatus[index], roleChangeStatus: status}
+      setFilteredData(updatedStatus)
+    }else {
+
     }
   }
 
-  // console.log(filteredData, "fil.......")
+  const handleRequestedUsers = async () => {
+    // const data = await fetchRequestedUsers();
+    setViewDoc(!viewDoc)
+    setViewRequestedUsers(!viewRequestedUsers)
+  }
+  
+
+  console.log(filteredData, "fil.......")
   // console.log(data, "dat.......")
 
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 ">
       <h4 className="mb-6 flex items-center justify-between text-xl font-semibold text-black dark:text-white">
         {label ?? "Table User"}
+        <div className="flex gap-2">
+
+        
+        <span
+            className="cursor-pointer rounded-full border bg-boxdark px-2 py-1 text-sm text-white"
+            onClick={handleRequestedUsers}
+          >
+            View Requested Users
+          </span>
         {filteredData?.length ? (
           <span
             className="cursor-pointer rounded-full border bg-boxdark px-2 py-1 text-sm text-white"
@@ -258,77 +293,438 @@ const router = useRouter();
         ) : (
           ""
         )}
+        </div>
       </h4>
+
+      {viewDocument && 
+      <ViewEventDocument isModalOpen={viewDocument}/> }
+      {viewRequestedUsers ?
       <div className="w-full">
-        <div id="table-scrollable" className="flex max-h-[80vh] w-full flex-col my_custom_scrollbar overflow-scroll">
+        <div
+          id="table-scrollable"
+          className="my_custom_scrollbar flex max-h-[80vh] w-full flex-col overflow-scroll"
+        >
+          <InfiniteScroll
+            dataLength={filteredData?.length > 0 ? filteredData?.length : 0}
+            next={fetchMoreData}
+            hasMore={hasMore}
+            loader={
+              !filteredData ? (
+                <p className="flex h-[80vh] items-center justify-center">
+                  No data Found
+                </p>
+              ) : filteredData?.length < 1 ? (
+                <InfiniteScrollLoader />
+              ) : null
+            }
+            endMessage={
+              <p className="flex h-[20vh] w-full items-center justify-center">
+                No more data to load.
+              </p>
+            }
+            scrollableTarget="table-scrollable"
+          >
+            <table className="divide-gray-200 min-w-full divide-y ">
+              <thead className="bg-gray-50 ">
+                <tr>
+                  {filteredData && filteredData != null && (
+                    <>
+                      <th className="text-gray-500 px-6 py-3 text-left  text-xs font-semibold uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="text-gray-500 px-6 py-3 text-left  text-xs font-semibold uppercase tracking-wider">
+                        Role
+                      </th>
+                      {!viewDoc &&
+                        <>
+                        <th className="text-gray-500 px-6 py-3 text-left  text-xs font-semibold uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="text-gray-500 px-6 py-3 text-left  text-xs font-semibold uppercase tracking-wider">
+                        View Docs
+                      </th>
+                      </>}
+                    </>
+                  )}
+                  {filteredData &&
+                    filteredData[0] != null &&
+                    Object.keys(filteredData[0])?.map(
+                      (key: any, index: number) =>
+                        key !== "name" &&
+                        key !== "role" &&
+                        key !== "roleChangeStatus" ? (
+                          <th
+                            key={index}
+                            className="text-gray-500 px-6 py-3 text-left  text-xs font-semibold uppercase tracking-wider"
+                          >
+                            {key === "name" ? (
+                              <span className="flex gap-2">
+                                {key}
+                                <p onClick={handleUpSort}>
+                                  <Image
+                                    className="rotate-180 cursor-pointer rounded-full"
+                                    src="/images/icon/icon-arrow-down.svg"
+                                    alt="avatar"
+                                    width={16}
+                                    height={16}
+                                  />
+                                </p>
+                                <p onClick={handlednSort}>
+                                  <Image
+                                    className="cursor-pointer rounded-full"
+                                    src="/images/icon/icon-arrow-down.svg"
+                                    alt="avatar"
+                                    width={16}
+                                    height={16}
+                                  />
+                                </p>{" "}
+                              </span>
+                            ) : key === "createdAt" ? (
+                              <span className="flex gap-2">
+                                {key}
+                                <p onClick={() => handleDateSortReverse(key)}>
+                                  <Image
+                                    className="rotate-180 cursor-pointer rounded-full"
+                                    src="/images/icon/icon-arrow-down.svg"
+                                    alt="avatar"
+                                    width={16}
+                                    height={16}
+                                  />
+                                </p>
+                                <p onClick={() => handleDateSort(key)}>
+                                  <Image
+                                    className="cursor-pointer rounded-full"
+                                    src="/images/icon/icon-arrow-down.svg"
+                                    alt="avatar"
+                                    width={16}
+                                    height={16}
+                                  />
+                                </p>{" "}
+                              </span>
+                            ) : (
+                              key
+                            )}
+                          </th>
+                        ) : null,
+                    )}
+                  {type !== "user" &&
+                    label != "Events" &&
+                    label != "Collectibles" &&
+                    label != "Comments" &&
+                    label != "Buyers" &&
+                    label != "Tickets" && (
+                      <th className="text-gray-500 whitespace-nowrap px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">
+                        {"Change Role"}
+                      </th>
+                    )}
+                  <th className="text-gray-500 whitespace-nowrap px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-gray-200 divide-y bg-white">
+                {filteredData?.length > 0 &&
+                  filteredData?.map((item: any, key: number) => {
+                    const isSelected =
+                      selectedRow && selectedRow[label.toLowerCase()] === key;
+                    return (
+                      <tr
+                        key={key}
+                        className={`cursor-pointer ${isSelected ? "bg-blue-200" : ""} ${
+                          key === filteredData?.length
+                            ? ""
+                            : "border-b border-stroke dark:border-strokedark"
+                        }`}
+                        onClick={() => {
+                          if (
+                            type === "event" ||
+                            type == "user" ||
+                            type === "ticket" ||
+                            type === "post" ||
+                            type === "collectible" ||
+                            type === "buyer"
+                          ) {
+                            handleClick(key, item, label);
+                            if (type === "user") {
+                              dispatch(
+                                updateUser({
+                                  index: key,
+                                  filteredData: item,
+                                  label,
+                                }),
+                              );
+                            } else if (type == "event") {
+                              dispatch(
+                                updateEvents({
+                                  index: key,
+                                  filteredData: item,
+                                  label,
+                                }),
+                              );
+                            } else if (type === "ticket") {
+                              dispatch(
+                                updateTickets({
+                                  index: key,
+                                  filteredData: item,
+                                  label,
+                                }),
+                              );
+                            } else if (type === "collectible") {
+                              dispatch(
+                                updateBuyers({
+                                  index: key,
+                                  filteredData: item,
+                                  label,
+                                }),
+                              );
+                            } else if (type === "buyer") {
+                              dispatch(
+                                updateBuyers({
+                                  index: key,
+                                  filteredData: item,
+                                  label,
+                                }),
+                              );
+                            } else if (type === "post") {
+                              dispatch(
+                                updatePosts({
+                                  index: key,
+                                  filteredData: item,
+                                  label,
+                                }),
+                              );
+                            }
+                          }
+                        }}
+                      >
+                        <td
+                          className={`text-gray-900 relative whitespace-nowrap px-6 text-sm font-medium`}
+                        >
+                          {item?.name}
+                        </td>
+                        <td
+                          className={`text-gray-900 relative whitespace-nowrap px-6 text-sm font-medium`}
+                        >
+                          <span onClick={(e) => e.stopPropagation()}>
+                            {
+                              <span className="flex justify-between gap-1">
+                                {editIndex === key ? (
+                                  <input
+                                    className={`mx-2 rounded border-[1px]`}
+                                    type="text"
+                                    placeholder={item?.role}
+                                    onChange={(e) =>
+                                      setEditValue(e.target.value)
+                                    }
+                                    value={editValue}
+                                  />
+                                ) : (
+                                  <p>
+                                    {highlightText(
+                                      String(item?.role),
+                                      filterText,
+                                    )}
+                                  </p>
+                                )}
+
+                                {editIndex === key ? (
+                                  <button onClick={() => handleEditSave(key)}>
+                                    save
+                                  </button>
+                                ) : (
+                                  <Image
+                                    onClick={() => {
+                                      setEditIndex(key);
+                                    }}
+                                    className="cursor-pointer"
+                                    src="/images/icon/pencil-edit.svg"
+                                    alt="avatar"
+                                    height={16}
+                                    width={16}
+                                  />
+                                )}
+                              </span>
+                            }
+                          </span>
+                        </td>
+                        {!viewDoc &&
+                        <>
+                          <td
+                          className={`text-gray-900 relative whitespace-nowrap px-6 text-sm font-medium`}
+                        >
+                          {item?.roleChangeStatus}
+                        </td>
+                        <td
+                          className={`text-gray-900 relative flex gap-2 whitespace-nowrap px-6 text-sm font-medium`}
+                        >
+                          <button onClick={() => setViewDocument(true)} className="px-1 hover:underline text-black">View Docs</button>
+                                <div onClick={(e) => e.stopPropagation()} className="flex gap-2">
+                                  <div className="flex flex-col gap-1">
+                                    <button onClick={() => item?.roleChangeStatus === "pending" ? handleViewDocStatus(item?.username, "approve", key) : null} className={`${item?.roleChangeStatus === "pending" ? "cursor-pointer" : "cursor-default"} text-blue-400 hover:underline`}>
+                                      Approve
+                                    </button>
+                                    <button onClick={() => item?.roleChangeStatus === "pending" ? handleViewDocStatus(item?.username, "reject", key) : null} className={`${item?.roleChangeStatus === "pending" ? "cursor-pointer" : "cursor-default"} text-blue-400 hover:underline`}>
+                                      Reject
+                                    </button>
+                                  </div>
+                                </div>
+                          
+                        </td>
+                        </>}
+
+                        {Object.keys(item)?.map((values: any, ind: number) =>
+                          values !== "name" && values !== "role" && values !== "roleChangeStatus" ? (
+                            <td
+                              key={ind}
+                              className={`text-gray-900 relative ${values === "avatar" ? "py-0" : "py-4"} whitespace-nowrap px-6 text-sm font-medium`}
+                            >
+                              {values === "avatar" ? (
+                                <>
+                                  {item[values] !== null && (
+                                    <Image
+                                      className="relative left-[50%] aspect-square translate-x-[-50%] rounded-full object-cover"
+                                      src={item[values]}
+                                      alt="avatar"
+                                      width={38}
+                                      height={38}
+                                    />
+                                  )}
+                                </>
+                              ) : values === "coverImg" ? (
+                                <>
+                                  {item[values] !== null && (
+                                    <Image
+                                      className=""
+                                      src={item[values]}
+                                      alt="avatar"
+                                      fill
+                                    />
+                                  )}
+                                </>
+                              ) : values === "createdAt" ? (
+                                moment(item[values]).format("lll")
+                              ) : item[values] === null ? (
+                                <span className="text-gray-500"></span>
+                              ) : tags.includes(values) ? (
+                                highlightText(String(item[values]), filterText)
+                              ) : tags.length < 1 ? (
+                                highlightText(String(item[values]), filterText)
+                              ) : (
+                                item[values]
+                              )}
+                            </td>
+                          ) : null,
+                        )}
+                        {/* <td className=" px-4 text-white">
+                      <p className="rounded-md bg-slate-500 px-2 py-1">
+                        Suspend
+                      </p>
+                    </td> */}
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </InfiniteScroll>
+        </div>
+      </div>
+      : <div className="w-full">
+      <div
+        id="table-scrollable"
+        className="my_custom_scrollbar flex max-h-[80vh] w-full flex-col overflow-scroll"
+      >
         <InfiniteScroll
-          dataLength={filteredData?.length > 0 ? filteredData?.length : 0} 
+          dataLength={filteredData?.length > 0 ? filteredData?.length : 0}
           next={fetchMoreData}
-          hasMore={hasMore} 
-          loader={!filteredData ? <p className="flex items-center justify-center h-[80vh]">No data Found</p> : filteredData?.length < 1 ? <InfiniteScrollLoader /> : null}
-          endMessage={<p className="h-[20vh] flex w-full items-center justify-center">No more data to load.</p>}
+          hasMore={hasMore}
+          loader={
+            !filteredData ? (
+              <p className="flex h-[80vh] items-center justify-center">
+                No data Found
+              </p>
+            ) : filteredData?.length < 1 ? (
+              <InfiniteScrollLoader />
+            ) : null
+          }
+          endMessage={
+            <p className="flex h-[20vh] w-full items-center justify-center">
+              No more data to load.
+            </p>
+          }
           scrollableTarget="table-scrollable"
         >
           <table className="divide-gray-200 min-w-full divide-y ">
             <thead className="bg-gray-50 ">
               <tr>
+                {filteredData && filteredData[0] != null && (
+                  <>
+                    <th className="text-gray-500 px-6 py-3 text-left  text-xs font-semibold uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="text-gray-500 px-6 py-3 text-left  text-xs font-semibold uppercase tracking-wider">
+                      Role
+                    </th>
+                  </>
+                )}
                 {filteredData &&
                   filteredData[0] != null &&
                   Object.keys(filteredData[0])?.map(
-                    (key: any, index: number) => (
-                      <th
-                        key={index}
-                        className="text-gray-500 px-6 py-3 text-left  text-xs font-semibold uppercase tracking-wider"
-                      >
-                        {key === "name" ? (
-                          <span className="flex gap-2">
-                            {key}
-                            <p onClick={handleUpSort}>
-                              <Image
-                                className="rotate-180 cursor-pointer rounded-full"
-                                src="/images/icon/icon-arrow-down.svg"
-                                alt="avatar"
-                                width={16}
-                                height={16}
-                              />
-                            </p>
-                            <p onClick={handlednSort}>
-                              <Image
-                                className="cursor-pointer rounded-full"
-                                src="/images/icon/icon-arrow-down.svg"
-                                alt="avatar"
-                                width={16}
-                                height={16}
-                              />
-                            </p>{" "}
-                          </span>
-                        ) : key === "createdAt" ? (
-                          <span className="flex gap-2">
-                            {key}
-                            <p onClick={() => handleDateSortReverse(key)}>
-                              <Image
-                                className="rotate-180 cursor-pointer rounded-full"
-                                src="/images/icon/icon-arrow-down.svg"
-                                alt="avatar"
-                                width={16}
-                                height={16}
-                              />
-                            </p>
-                            <p onClick={() => handleDateSort(key)}>
-                              <Image
-                                className="cursor-pointer rounded-full"
-                                src="/images/icon/icon-arrow-down.svg"
-                                alt="avatar"
-                                width={16}
-                                height={16}
-                              />
-                            </p>{" "}
-                          </span>
-                        ) : (
-                          key
-                        )}
-                      </th>
-                    ),
+                    (key: any, index: number) =>
+                      key !== "name" &&
+                      key !== "role" &&
+                      key !== "viewDocs" &&
+                      key !== "status" ? (
+                        <th
+                          key={index}
+                          className="text-gray-500 px-6 py-3 text-left  text-xs font-semibold uppercase tracking-wider"
+                        >
+                          {key === "name" ? (
+                            <span className="flex gap-2">
+                              {key}
+                              <p onClick={handleUpSort}>
+                                <Image
+                                  className="rotate-180 cursor-pointer rounded-full"
+                                  src="/images/icon/icon-arrow-down.svg"
+                                  alt="avatar"
+                                  width={16}
+                                  height={16}
+                                />
+                              </p>
+                              <p onClick={handlednSort}>
+                                <Image
+                                  className="cursor-pointer rounded-full"
+                                  src="/images/icon/icon-arrow-down.svg"
+                                  alt="avatar"
+                                  width={16}
+                                  height={16}
+                                />
+                              </p>{" "}
+                            </span>
+                          ) : key === "createdAt" ? (
+                            <span className="flex gap-2">
+                              {key}
+                              <p onClick={() => handleDateSortReverse(key)}>
+                                <Image
+                                  className="rotate-180 cursor-pointer rounded-full"
+                                  src="/images/icon/icon-arrow-down.svg"
+                                  alt="avatar"
+                                  width={16}
+                                  height={16}
+                                />
+                              </p>
+                              <p onClick={() => handleDateSort(key)}>
+                                <Image
+                                  className="cursor-pointer rounded-full"
+                                  src="/images/icon/icon-arrow-down.svg"
+                                  alt="avatar"
+                                  width={16}
+                                  height={16}
+                                />
+                              </p>{" "}
+                            </span>
+                          ) : (
+                            key
+                          )}
+                        </th>
+                      ) : null,
                   )}
                 {type !== "user" &&
                   label != "Events" &&
@@ -344,170 +740,188 @@ const router = useRouter();
               </tr>
             </thead>
             <tbody className="divide-gray-200 divide-y bg-white">
-              {filteredData?.length > 0 && filteredData?.map((item: any, key: number) => {
-                const isSelected =
-                  selectedRow && selectedRow[label.toLowerCase()] === key;
-                return (
-                  <tr
-                    key={key}
-                    className={`cursor-pointer ${isSelected ? "bg-blue-200" : ""} ${
-                      key === filteredData?.length
-                        ? ""
-                        : "border-b border-stroke dark:border-strokedark"
-                    }`}
-                    onClick={() => {
-                      if (
-                        type === "event" ||
-                        type == "user" ||
-                        type === "ticket" ||
-                        type === "post" ||
-                        type === "collectible" ||
-                        type === "buyer"
-                      ) {
-                        handleClick(key, item, label);
-                        if (type === "user") {
-                          dispatch(
-                            updateUser({
-                              index: key,
-                              filteredData: item,
-                              label,
-                            }),
-                          );
-                        } else if (type == "event") {
-                          dispatch(
-                            updateEvents({
-                              index: key,
-                              filteredData: item,
-                              label,
-                            }),
-                          );
-                        } else if (type === "ticket") {
-                          dispatch(
-                            updateTickets({
-                              index: key,
-                              filteredData: item,
-                              label,
-                            }),
-                          );
-                        } else if (type === "collectible") {
-                          dispatch(
-                            updateBuyers({
-                              index: key,
-                              filteredData: item,
-                              label,
-                            }),
-                          );
-                        } else if (type === "buyer") {
-                          dispatch(
-                            updateBuyers({
-                              index: key,
-                              filteredData: item,
-                              label,
-                            }),
-                          );
-                        } else if (type === "post") {
-                          dispatch(
-                            updatePosts({
-                              index: key,
-                              filteredData: item,
-                              label,
-                            }),
-                          );
+              {filteredData?.length > 0 &&
+                filteredData?.map((item: any, key: number) => {
+                  const isSelected =
+                    selectedRow && selectedRow[label.toLowerCase()] === key;
+                  return (
+                    <tr
+                      key={key}
+                      className={`cursor-pointer ${isSelected ? "bg-blue-200" : ""} ${
+                        key === filteredData?.length
+                          ? ""
+                          : "border-b border-stroke dark:border-strokedark"
+                      }`}
+                      onClick={() => {
+                        if (
+                          type === "event" ||
+                          type == "user" ||
+                          type === "ticket" ||
+                          type === "post" ||
+                          type === "collectible" ||
+                          type === "buyer"
+                        ) {
+                          handleClick(key, item, label);
+                          if (type === "user") {
+                            dispatch(
+                              updateUser({
+                                index: key,
+                                filteredData: item,
+                                label,
+                              }),
+                            );
+                          } else if (type == "event") {
+                            dispatch(
+                              updateEvents({
+                                index: key,
+                                filteredData: item,
+                                label,
+                              }),
+                            );
+                          } else if (type === "ticket") {
+                            dispatch(
+                              updateTickets({
+                                index: key,
+                                filteredData: item,
+                                label,
+                              }),
+                            );
+                          } else if (type === "collectible") {
+                            dispatch(
+                              updateBuyers({
+                                index: key,
+                                filteredData: item,
+                                label,
+                              }),
+                            );
+                          } else if (type === "buyer") {
+                            dispatch(
+                              updateBuyers({
+                                index: key,
+                                filteredData: item,
+                                label,
+                              }),
+                            );
+                          } else if (type === "post") {
+                            dispatch(
+                              updatePosts({
+                                index: key,
+                                filteredData: item,
+                                label,
+                              }),
+                            );
+                          }
                         }
-                      }
-                    }}
-                  >
-                    {Object.keys(item)?.map((values: any, ind: number) => (
+                      }}
+                    >
                       <td
-                        key={ind}
-                        className={`text-gray-900 relative ${values === "avatar" ? "py-0" : "py-4"} whitespace-nowrap px-6 text-sm font-medium`}
+                        className={`text-gray-900 relative whitespace-nowrap px-6 text-sm font-medium`}
                       >
-                        {values === "avatar" ? (
-                          <>
-                            {item[values] !== null && (
-                              <Image
-                                className="object-cover relative rounded-full aspect-square left-[50%] translate-x-[-50%]"
-                                src={item[values]}
-                                alt="avatar"
-                                width={38}
-                                height={38}
-                              />
-                            )}
-                          </>
-                        ) : values === "coverImg" ? (
-                          <>
-                            {item[values] !== null && (
-                              <Image
-                                className=""
-                                src={item[values]}
-                                alt="avatar"
-                                fill
-                              />
-                            )}
-                          </>
-                        ) 
-                        : values === "role" ? (
-                          <span onClick={(e) => e.stopPropagation()}>
-                            {
-                              <span className="flex justify-between gap-1">
-                                {editIndex === key ? (
-                                  <input
-                                    className={`mx-2 rounded border-[1px]`}
-                                    type="text"
-                                    placeholder={item[values]}
-                                    onChange={(e) => setEditValue(e.target.value)}
-                                    value={editValue}
-                                  />
-                                ) : (
-                                  <p>
-                                    {highlightText(
-                                      String(item[values]),
-                                      filterText,
-                                    )}
-                                  </p>
-                                )}
-                                
-                                {editIndex === key ? <button onClick={() => handleEditSave(key)}>save</button> : 
-                                <Image
-                                onClick={() => {
-                                  setEditIndex(key)
-                                }}
-                                className="cursor-pointer"
-                                src="/images/icon/pencil-edit.svg"
-                                alt="avatar"
-                                height={16}
-                                width={16}
-                              /> }
-                              </span>
-                            }
-                          </span>
-                        )
-                         : values === "createdAt" ? (
-                          moment(item[values]).format("lll")
-                        ) : item[values] === null ? (
-                          <span className="text-gray-500"></span>
-                        ) : tags.includes(values) ? (
-                          highlightText(String(item[values]), filterText)
-                        ) : tags.length < 1 ? (
-                          highlightText(String(item[values]), filterText)
-                        ) : (
-                          item[values]
-                        )}
+                        {item?.name}
                       </td>
-                    ))}
-                    {/* <td className=" px-4 text-white">
-                      <p className="rounded-md bg-slate-500 px-2 py-1">
-                        Suspend
-                      </p>
-                    </td> */}
-                  </tr>
-                );
-              })}
+                      <td
+                        className={`text-gray-900 relative whitespace-nowrap px-6 text-sm font-medium`}
+                      >
+                        <span onClick={(e) => e.stopPropagation()}>
+                          {
+                            <span className="flex justify-between gap-1">
+                              {editIndex === key ? (
+                                <input
+                                  className={`mx-2 rounded border-[1px]`}
+                                  type="text"
+                                  placeholder={item?.role}
+                                  onChange={(e) =>
+                                    setEditValue(e.target.value)
+                                  }
+                                  value={editValue}
+                                />
+                              ) : (
+                                <p>
+                                  {highlightText(
+                                    String(item?.role),
+                                    filterText,
+                                  )}
+                                </p>
+                              )}
+
+                              {editIndex === key ? (
+                                <button onClick={() => handleEditSave(key)}>
+                                  save
+                                </button>
+                              ) : (
+                                <Image
+                                  onClick={() => {
+                                    setEditIndex(key);
+                                  }}
+                                  className="cursor-pointer"
+                                  src="/images/icon/pencil-edit.svg"
+                                  alt="avatar"
+                                  height={16}
+                                  width={16}
+                                />
+                              )}
+                            </span>
+                          }
+                        </span>
+                      </td>
+                      
+
+                      {Object.keys(item)?.map((values: any, ind: number) =>
+                        values !== "name" && values !== "role" ? (
+                          <td
+                            key={ind}
+                            className={`text-gray-900 relative ${values === "avatar" ? "py-0" : "py-4"} whitespace-nowrap px-6 text-sm font-medium`}
+                          >
+                            {values === "avatar" ? (
+                              <>
+                                {item[values] !== null && (
+                                  <Image
+                                    className="relative left-[50%] aspect-square translate-x-[-50%] rounded-full object-cover"
+                                    src={item[values]}
+                                    alt="avatar"
+                                    width={38}
+                                    height={38}
+                                  />
+                                )}
+                              </>
+                            ) : values === "coverImg" ? (
+                              <>
+                                {item[values] !== null && (
+                                  <Image
+                                    className=""
+                                    src={item[values]}
+                                    alt="avatar"
+                                    fill
+                                  />
+                                )}
+                              </>
+                            ) : values === "createdAt" ? (
+                              moment(item[values]).format("lll")
+                            ) : item[values] === null ? (
+                              <span className="text-gray-500"></span>
+                            ) : tags.includes(values) ? (
+                              highlightText(String(item[values]), filterText)
+                            ) : tags.length < 1 ? (
+                              highlightText(String(item[values]), filterText)
+                            ) : (
+                              item[values]
+                            )}
+                          </td>
+                        ) : null,
+                      )}
+                      {/* <td className=" px-4 text-white">
+                    <p className="rounded-md bg-slate-500 px-2 py-1">
+                      Suspend
+                    </p>
+                  </td> */}
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
-          </InfiniteScroll>
-        </div>
+        </InfiniteScroll>
       </div>
+    </div>}
       {/* pagination */}
       {/* <div className=" flex items-center justify-end">
         <div className="mt-3 flex items-center gap-3 p-2">

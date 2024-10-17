@@ -44,6 +44,7 @@ const Home = () => {
   const [noData, setNoData] = useState(false);
   const [hasUserMore, setHasUserMore] = useState<boolean>(true)
   const [hasMore, setHasMore] = useState<boolean>(true)
+  const [viewEventDoc, setViewEventDoc] = useState<any>(true)
   const [userData, setUserData] = useState<IUser>({
     username: "",
     eventId: "",
@@ -52,7 +53,7 @@ const Home = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const data = await AllUsers();
+      const data = await AllUsers(1, 5000, viewEventDoc);
       setUsers(data);
       setLoading(false);
       return data;
@@ -93,7 +94,8 @@ const Home = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [viewEventDoc]);
+  
 
   const handleUserClick = async (
     index: any,
@@ -146,7 +148,7 @@ const Home = () => {
     });
     switch (type) {
       case "user":
-        await fetchData(() => AllUsers(newPage, 10), setUsers, true, type);
+        await fetchData(() => AllUsers(newPage, 10, viewEventDoc), setUsers, true, type);
         setTicketBuyers([]);
         setEvents([]);
         setTicketBuyers([]);
@@ -186,6 +188,7 @@ const Home = () => {
     }
   }
 
+
   return (
     <DefaultLayout>
       {loading ? (
@@ -197,6 +200,8 @@ const Home = () => {
               label={"Users"}
               data={users}
               type="user"
+              viewDoc={viewEventDoc}
+              setViewDoc={setViewEventDoc}
               hasMore={hasUserMore}
               fetchPaginated={fetchPaginated}
               page={page?.user}
