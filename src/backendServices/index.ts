@@ -113,6 +113,37 @@ export const EditViewDocStatus = async (userName: string, status: string) => {
   }
 };
 
+export const EditReviewStatus = async (userName: string, status: string) => {
+  try {
+    const { data } = await axios.post(
+      `${DASHBOARD_API}/rolechange/docs`,
+      {
+        username: userName,
+        status: status === "approve"
+      },
+      {headers : {"ngrok-skip-browser-warning": "69420",}}
+    );
+    return data;
+  } catch (error) {
+    toast.error("Error Updating Status")
+    // return error
+  }
+};
+
+export const getUserDocs = async (userName: string) => {
+  try {
+    const { data } = await axios.get(
+      `${DASHBOARD_API}/rolechange/${userName}`,
+      {headers : {"ngrok-skip-browser-warning": "69420",}}
+    );
+    return data;
+  } catch (error) {
+    toast.error("Error Updating Status")
+    // return error
+  }
+};
+
+
 export const EditEventsAndTicketAddition = async (userName: string, eventId: string, payload: any) => {
   try{
   const { data } = await axios.patch(

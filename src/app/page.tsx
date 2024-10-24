@@ -214,7 +214,7 @@ const Home = () => {
               ) => handleUserClick(index, data, label, page)}
             />
 
-            {events.length ? (
+            {events?.length ? (
               <TableOne
                 label={"Events"}
                 data={events}
