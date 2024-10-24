@@ -2,32 +2,31 @@ import axios from "axios";
 import toast from "react-hot-toast";
 const DASHBOARD_API = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-
 export const dashboardData = async () => {
   try {
-    const { data } = await axios.get(
-      `${DASHBOARD_API}/combineddata`,
-    );
+    const { data } = await axios.get(`${DASHBOARD_API}/combineddata`);
     return data;
   } catch (error) {
-    toast.error("Error Fetching Data")
+    toast.error("Error Fetching Data");
   }
-  
 };
 
-export const AllUsers = async (page: number = 1, items: number = 5000, viewEventDoc: any = true) => {
-  console.log(viewEventDoc, "--------------")
+export const AllUsers = async (
+  page: number = 1,
+  items: number = 5000,
+  viewEventDoc: any = true,
+) => {
+  console.log(viewEventDoc, "--------------");
   try {
     const { data } = await axios.get(
-      `${DASHBOARD_API}/${viewEventDoc ? "users": "rolechange"}?page=${page}&items=${items}`,
-      {headers : {"ngrok-skip-browser-warning": "69420",}}
+      `${DASHBOARD_API}/${viewEventDoc ? "users" : "rolechange"}?page=${page}&items=${items}`,
+      { headers: { "ngrok-skip-browser-warning": "69420" } },
     );
     return data.users;
   } catch (error) {
-    toast.error("Error Fetching Data")
+    toast.error("Error Fetching Data");
     // return error;
   }
-  
 };
 // export const fetchRequestedUsers = async (page: number = 1, items: number = 5000) => {
 //   try {
@@ -40,7 +39,7 @@ export const AllUsers = async (page: number = 1, items: number = 5000, viewEvent
 //     toast.error("Error Fetching Data")
 //     // return error;
 //   }
-  
+
 // };
 
 export const AllCollectibles = async (page: number = 1, items: number = 10) => {
@@ -50,21 +49,20 @@ export const AllCollectibles = async (page: number = 1, items: number = 10) => {
     );
     return data.collectibles;
   } catch (error) {
-    toast.error("Error Fetching Data")
+    toast.error("Error Fetching Data");
     // return error;
   }
-  
 };
 
 export const AllEvents = async (page: number = 1, items: number = 10) => {
   try {
     const { data } = await axios.get(
       `${DASHBOARD_API}/events?page=${page}&items=${items}`,
-      {headers : {"ngrok-skip-browser-warning": "69420",}}
+      { headers: { "ngrok-skip-browser-warning": "69420" } },
     );
     return data.events;
   } catch (error) {
-    toast.error("Error Fetching Data")
+    toast.error("Error Fetching Data");
     // return error;
   }
 };
@@ -76,22 +74,19 @@ export const AllPosts = async (page: number = 1, items: number = 5) => {
     );
     return data.posts;
   } catch (error) {
-    toast.error("Error Fetching Data")
+    toast.error("Error Fetching Data");
     // return error
   }
 };
 
 export const EditUsersRole = async (userName: string, role: string) => {
   try {
-    const { data } = await axios.patch(
-      `${DASHBOARD_API}/user/${userName}`,
-      {
-        role: role
-      }
-    );
+    const { data } = await axios.patch(`${DASHBOARD_API}/user/${userName}`, {
+      role: role,
+    });
     return data;
   } catch (error) {
-    toast.error("Error Editing User")
+    toast.error("Error Editing User");
     // return error
   }
 };
@@ -99,16 +94,16 @@ export const EditViewDocStatus = async (userName: string, status: string) => {
   try {
     const { data } = await axios.post(
       `${DASHBOARD_API}/rolechange/approve`,
-      
+
       {
         username: userName,
-        status: status === "approve"
+        status: status === "approve",
       },
-      {headers : {"ngrok-skip-browser-warning": "69420",}}
+      { headers: { "ngrok-skip-browser-warning": "69420" } },
     );
     return data;
   } catch (error) {
-    toast.error("Error Updating Status")
+    toast.error("Error Updating Status");
     // return error
   }
 };
@@ -119,13 +114,13 @@ export const EditReviewStatus = async (userName: string, status: string) => {
       `${DASHBOARD_API}/rolechange/docs`,
       {
         username: userName,
-        status: status === "approve"
+        status: status === "approve",
       },
-      {headers : {"ngrok-skip-browser-warning": "69420",}}
+      { headers: { "ngrok-skip-browser-warning": "69420" } },
     );
     return data;
   } catch (error) {
-    toast.error("Error Updating Status")
+    toast.error("Error Updating Status");
     // return error
   }
 };
@@ -134,31 +129,31 @@ export const getUserDocs = async (userName: string) => {
   try {
     const { data } = await axios.get(
       `${DASHBOARD_API}/rolechange/${userName}`,
-      {headers : {"ngrok-skip-browser-warning": "69420",}}
+      { headers: { "ngrok-skip-browser-warning": "69420" } },
     );
     return data;
   } catch (error) {
-    toast.error("Error Updating Status")
+    toast.error("Error Updating Status");
     // return error
   }
 };
 
-
-export const EditEventsAndTicketAddition = async (userName: string, eventId: string, payload: any) => {
-  try{
-  const { data } = await axios.patch(
-    `${DASHBOARD_API}/event/${eventId}/${userName}`,
-      payload
-    ,
-    {headers : {"ngrok-skip-browser-warning": "69420",}}
-  );
-  return data;
-}
-catch(err) {
-  // toast.error("Error Fetching Data")
-return err
-}
-  
+export const EditEventsAndTicketAddition = async (
+  userName: string,
+  eventId: string,
+  payload: any,
+) => {
+  try {
+    const { data } = await axios.patch(
+      `${DASHBOARD_API}/event/${eventId}/${userName}`,
+      payload,
+      { headers: { "ngrok-skip-browser-warning": "69420" } },
+    );
+    return data;
+  } catch (err) {
+    // toast.error("Error Fetching Data")
+    return err;
+  }
 };
 
 export const getEventTickets = async (
@@ -173,12 +168,10 @@ export const getEventTickets = async (
     );
     return data?.Tickets;
   } catch (error) {
-    toast.error("Error Fetching Data")
+    toast.error("Error Fetching Data");
     // return error
   }
-  
 };
-
 
 export const getTicketsBuyers = async (
   ticketId: string,
@@ -186,17 +179,15 @@ export const getTicketsBuyers = async (
   page: number = 1,
   items: number = 10,
 ) => {
-
   try {
     const { data } = await axios.get(
       `${DASHBOARD_API}/ticketbuyers/${ticketId}/${username}?page=${page}&items=${items}`,
     );
     return data.ticketBuyers;
   } catch (error) {
-    toast.error("Error Fetching Data")
+    toast.error("Error Fetching Data");
     // return error;
   }
-  
 };
 
 export const getUserEvents = async (
@@ -204,17 +195,15 @@ export const getUserEvents = async (
   page: number = 1,
   items: number = 10,
 ) => {
-
   try {
     const { data } = await axios.get(
       `${DASHBOARD_API}/users/events/${username}?page=${page}&items=${items}`,
     );
     return data.usersEvents;
   } catch (error) {
-    toast.error("Error Fetching Data")
-    // return error 
+    toast.error("Error Fetching Data");
+    // return error
   }
-  
 };
 
 export const getUserCollectibles = async (username: string) => {
@@ -224,10 +213,9 @@ export const getUserCollectibles = async (username: string) => {
     );
     return data.userCollectibles;
   } catch (error) {
-    toast.error("Error Fetching Data")
+    toast.error("Error Fetching Data");
     // return error
   }
-  
 };
 
 export const getCollectibleBuyers = async (
@@ -241,10 +229,9 @@ export const getCollectibleBuyers = async (
     );
     return data?.collectibleBuyers;
   } catch (error) {
-    toast.error("Error Fetching Data")
+    toast.error("Error Fetching Data");
     // return error
   }
-  
 };
 // /post/comment/:postId/:username
 export const getUserCommentOnPost = async (
@@ -259,10 +246,31 @@ export const getUserCommentOnPost = async (
   return data?.UserDetails;
 };
 
-export const getUserTickets = async (eventId:any, username:any, newPage:any)=>{
+export const getUserTickets = async (
+  eventId: any,
+  username: any,
+  newPage: any,
+) => {
   try {
-    
-  } catch (error:any) {
+  } catch (error: any) {
     throw new Error(error);
   }
-}
+};
+
+export const promoteEvent = async (payload: any) => {
+  try {
+    const { data } = await axios.post(
+      `${DASHBOARD_API}/promote-sales`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "ngrok-skip-browser-warning": "69420",
+        },
+      },
+    );
+    return data;
+  } catch (err) {
+    return err;
+  }
+};
