@@ -409,10 +409,10 @@ const TableEvents = ({
                   >
 
 <td className="text-gray-900 whitespace-nowrap px-6 py-4 text-sm font-medium">
-          {highlightText(item?.eventId, filterText) ?? 'N/A'}
+          {highlightText(String(item?.eventId), filterText) ?? 'N/A'}
         </td>
         <td className="text-gray-900 whitespace-nowrap px-6 py-4 text-sm font-medium">
-          {highlightText(item?.name, filterText) ?? 'N/A'}
+          {highlightText(String(item?.name), filterText) ?? 'N/A'}
         </td>
 
         {/* Display the Promote button next */}

@@ -538,7 +538,7 @@ const TableUser = ({
                           <td
                             className={`text-gray-900 relative whitespace-nowrap px-6 text-sm font-medium`}
                           >
-                            {highlightText(item?.name, filterText)}
+                            {highlightText(String(item?.name), filterText)}
                           </td>
                           <td
                             className={`text-gray-900 relative whitespace-nowrap px-6 text-sm font-medium`}
