@@ -42,7 +42,7 @@ export const AllUsers = async (
 
 // };
 
-export const AllCollectibles = async (page: number = 1, items: number = 10) => {
+export const AllCollectibles = async (page: number = 1, items: number = 100) => {
   try {
     const { data } = await axios.get(
       `${DASHBOARD_API}/collectible?page=${page}&items=${items}`,
@@ -54,7 +54,7 @@ export const AllCollectibles = async (page: number = 1, items: number = 10) => {
   }
 };
 
-export const AllEvents = async (page: number = 1, items: number = 10) => {
+export const AllEvents = async (page: number = 1, items: number = 100) => {
   try {
     const { data } = await axios.get(
       `${DASHBOARD_API}/events?page=${page}&items=${items}`,
@@ -67,7 +67,7 @@ export const AllEvents = async (page: number = 1, items: number = 10) => {
   }
 };
 
-export const AllPosts = async (page: number = 1, items: number = 5) => {
+export const AllPosts = async (page: number = 1, items: number = 50) => {
   try {
     const { data } = await axios.get(
       `${DASHBOARD_API}/posts?page=${page}&items=${items}`,

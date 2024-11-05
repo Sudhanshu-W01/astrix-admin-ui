@@ -248,13 +248,18 @@ input[type="search"]::-webkit-search-cancel-button {
     height: 2px;
   }
  
-  .my_custom_scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
+
   .my_custom_scrollbar::-webkit-scrollbar-thumb {
     background: grey;
     border-radius: 4px;
+  }
+  
+  @media not all and (min-resolution: 0.001dpcm) { 
+    /* This targets Safari specifically */
+    .my_custom_scrollbar {
+      overflow-y: scroll;
+      scrollbar-width: thin; /* Minimal control */
+    }
   }
   
   .my_custom_scrollbar_width_zero::-webkit-scrollbar {
