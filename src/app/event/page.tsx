@@ -181,7 +181,7 @@ const Event = () => {
             {buyerLoading ? <Loader /> : buyers.length ? (
               <TableOne
                 label={"Buyers"}
-                data={buyers}
+                data={buyers?.filter((el: any) => el?.status === "success")}
                 hasMore={hasNext}
                 type="buyer"
                 handleClick={(key: string, data: any, label: string) => {
