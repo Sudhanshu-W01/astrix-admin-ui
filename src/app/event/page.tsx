@@ -161,7 +161,8 @@ const Event = () => {
                   return {
                     name: el?.name,
                     issueQty: el?.issueQty,
-                    soldQty: el?.issueQty - el?.availableQty,
+                    // soldQty: el?.issueQty - el?.availableQty,
+                     soldQty: el?.soldQty,
                     availableQty: el?.availableQty,
                     maxQty: el?.maxQty,
                     ...el
